@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CustomRepository, Repository } from 'ngx-modrepo';
+import { CustomRepository, Repository } from 'ngx-crudx';
 
 import { Post } from './post.model';
 

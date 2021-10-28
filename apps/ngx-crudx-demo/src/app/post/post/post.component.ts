@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AnyObject } from 'ngx-modrepo';
+import { AnyObject } from 'ngx-crudx';
 
 import { Post } from '../post.model';
 import { PostRepository } from '../post.repository';

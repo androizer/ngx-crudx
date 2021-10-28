@@ -1,4 +1,4 @@
-import { Entity } from 'ngx-modrepo';
+import { Entity } from 'ngx-crudx';
 
 type uuid = string;
 

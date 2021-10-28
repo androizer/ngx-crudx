@@ -1,6 +1,6 @@
 import { RepoModel } from "../models";
 import { RepoEntityDecoratorOptions } from "../types";
-import { uuid_v4 } from "../utils/";
+import { uuid_v4 } from "../utils";
 
 /**
  * RepoEntity/Entity decorator for class based entity/model functions

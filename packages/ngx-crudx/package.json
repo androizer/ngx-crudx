@@ -1,5 +1,5 @@
 {
-  "name": "ngx-modrepo",
+  "name": "ngx-crudx",
   "version": "1.0.0",
   "description": "A library for leveraging Repository pattern & Entity in angular apps at scale.",
   "main": "index.js",

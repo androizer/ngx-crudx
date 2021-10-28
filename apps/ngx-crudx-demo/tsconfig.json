@@ -21,7 +21,7 @@
       "dom"
     ],
     "paths": {
-      "ngx-modrepo": ["../../packages/ngx-modrepo/src/public_api"]
+      "ngx-crudx": ["../../packages/ngx-crudx/src/public_api"]
     }
   },
   "angularCompilerOptions": {

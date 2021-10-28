@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { NgxModRepoModule } from 'ngx-modrepo';
+import { NgxModRepoModule } from 'ngx-crudx';
 
 import { PostRoutingModule } from './post-routing.module';
 import { PostRepository } from './post.repository';

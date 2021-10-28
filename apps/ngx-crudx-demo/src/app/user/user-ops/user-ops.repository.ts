@@ -1,4 +1,4 @@
-import { CustomRepository, Repository } from 'ngx-modrepo';
+import { CustomRepository, Repository } from 'ngx-crudx';
 
 import { User } from '../user.model';
 

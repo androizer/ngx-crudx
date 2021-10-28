@@ -1,5 +1,5 @@
 import { plainToClass, Type } from 'class-transformer';
-import { RepoEntity } from 'ngx-modrepo';
+import { RepoEntity } from 'ngx-crudx';
 
 @RepoEntity({
   path: 'users',

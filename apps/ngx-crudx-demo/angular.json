@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "ngx-repo-entity-demo": {
+    "ngx-crudx-demo": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -20,7 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/ngx-repo-entity-demo",
+            "outputPath": "dist/ngx-crudx-demo",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -72,10 +72,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "ngx-repo-entity-demo:build:production"
+              "browserTarget": "ngx-crudx-demo:build:production"
             },
             "development": {
-              "browserTarget": "ngx-repo-entity-demo:build:development"
+              "browserTarget": "ngx-crudx-demo:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -83,7 +83,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ngx-repo-entity-demo:build"
+            "browserTarget": "ngx-crudx-demo:build"
           }
         },
         "test": {
@@ -107,5 +107,5 @@
       }
     }
   },
-  "defaultProject": "ngx-repo-entity-demo"
+  "defaultProject": "ngx-crudx-demo"
 }
