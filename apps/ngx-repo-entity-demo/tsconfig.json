@@ -21,7 +21,7 @@
       "dom"
     ],
     "paths": {
-      "ngx-repo-entity": ["../../packages/ngx-repo-entity/src/public_api"]
+      "ngx-modrepo": ["../../packages/ngx-modrepo/src/public_api"]
     }
   },
   "angularCompilerOptions": {

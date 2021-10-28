@@ -1,10 +1,10 @@
-import { HttpParams } from '@angular/common/http';
-import { Directive } from '@angular/core';
-import { isArray, isEmpty, isFunction, isObject } from 'lodash';
-import { Observable } from 'rxjs';
+import { HttpParams } from "@angular/common/http";
+import { Directive } from "@angular/core";
+import { isArray, isEmpty, isFunction, isObject } from "lodash";
+import { Observable } from "rxjs";
 
-import { ConnectionNameNotFound } from '../exceptions';
-import { RepoModel } from '../models';
+import { ConnectionNameNotFound } from "../exceptions";
+import { RepoModel } from "../models";
 import {
   Adapter,
   AnyObject,
@@ -14,25 +14,22 @@ import {
   RepoEntityDecoratorOptions,
   RepoEntityOptions,
   RepoQueryBuilder,
-} from '../types';
+} from "../types";
 
 const DEFAULT_CONNECTION_NAME = "DEFAULT";
 
-/**
- * Repository is supposed to work with your entity objects.
- * Find entities, create, update, delete, etc.
- */
 @Directive()
-export abstract class Repository<T, QueryParamType = AnyObject>
+export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   implements IRepository<T, QueryParamType>
 {
-  private _decoratorOpts: RepoEntityDecoratorOptions;
+  protected _repoOpts: RepoEntityDecoratorOptions;
   constructor(
-    public readonly rootOpts: RepoEntityOptions,
-    public readonly modelOpts: RepoModel
+    protected readonly _rootOpts?: RepoEntityOptions,
+    _model?: RepoModel
   ) {
-    this._decoratorOpts = modelOpts._repoOpts;
+    this._repoOpts = _model?._repoOpts;
   }
+
   abstract findAll<R = T>(
     opts?: HttpRequestOptions<QueryParamType>
   ): Observable<R extends T ? R[] : R>;
@@ -85,20 +82,20 @@ export abstract class Repository<T, QueryParamType = AnyObject>
     key: keyof RepoEntityDecoratorOptions["routes"],
     optionalPath?
   ): URL {
-    const connectionName = this._decoratorOpts.name ?? DEFAULT_CONNECTION_NAME;
+    const connectionName = this._repoOpts.name ?? DEFAULT_CONNECTION_NAME;
     let optionFound;
-    if (isArray(this.rootOpts)) {
-      optionFound = this.rootOpts.find(
+    if (isArray(this._rootOpts)) {
+      optionFound = this._rootOpts.find(
         (item) =>
           item.name.toLowerCase() === DEFAULT_CONNECTION_NAME.toLowerCase()
       );
       if (!optionFound) {
         throw new ConnectionNameNotFound(connectionName);
       }
-    } else if (isObject(this.rootOpts) && !isEmpty(this.rootOpts)) {
+    } else if (isObject(this._rootOpts) && !isEmpty(this._rootOpts)) {
       // If user supplied different connection name and not equal to default,
       // then throw ConnectionNameNotFound error.
-      optionFound = this.rootOpts;
+      optionFound = this._rootOpts;
       if (
         connectionName.toLowerCase() !==
         (optionFound.name ?? DEFAULT_CONNECTION_NAME).toLowerCase()
@@ -107,10 +104,10 @@ export abstract class Repository<T, QueryParamType = AnyObject>
       }
     }
     const route =
-      this._decoratorOpts.routes?.[key]?.path ??
-      (optionalPath && typeof optionalPath === "string")
-        ? `${this._decoratorOpts.path}/${optionalPath}`
-        : `${this._decoratorOpts.path}`;
+      this._repoOpts.routes?.[key]?.path ??
+      (optionalPath && !isObject(optionalPath)
+        ? `${this._repoOpts.path}/${optionalPath}`
+        : `${this._repoOpts.path}`);
     const url = new URL(route, optionFound.basePath);
     // replace the url content with path params if exists
     url.href = this._replacePathParams(httpOpts, url.href);
@@ -131,8 +128,8 @@ export abstract class Repository<T, QueryParamType = AnyObject>
     httpOpts: HttpRequestOptions,
     key: keyof RepoEntityDecoratorOptions["routes"]
   ): HttpParams | undefined {
-    let decoQs = this._decoratorOpts.qs;
-    let routeQs = this._decoratorOpts.routes?.[key]?.qs;
+    let decoQs = this._repoOpts.qs;
+    let routeQs = this._repoOpts.routes?.[key]?.qs;
     let params: HttpParams;
     // if route qs is object and not empty, then check for mode
     if (isObject(routeQs) && !isEmpty(routeQs)) {
@@ -190,8 +187,8 @@ export abstract class Repository<T, QueryParamType = AnyObject>
     key: keyof RepoEntityDecoratorOptions["routes"]
   ) {
     let data = payload;
-    const decoAdapter = this._decoratorOpts.adapter;
-    const decoRouteAdapter = this._decoratorOpts.routes?.[key]?.adapter;
+    const decoAdapter = this._repoOpts.adapter;
+    const decoRouteAdapter = this._repoOpts.routes?.[key]?.adapter;
     if (decoRouteAdapter) {
       data = this._adaptToFromModel(mode, payload, decoRouteAdapter);
     } else if (decoAdapter) {
@@ -219,7 +216,6 @@ export abstract class Repository<T, QueryParamType = AnyObject>
           ? instance.adaptToModel(payload)
           : instance.adaptFromModel(payload);
     } else if (isObject(adapter) && !isEmpty(adapter)) {
-      // TODO: fix even any one of them is absent
       data =
         mode === "to"
           ? (adapter as Adapter).adaptToModel(payload)
@@ -231,17 +227,20 @@ export abstract class Repository<T, QueryParamType = AnyObject>
   /**
    * Parse the URL by replacing path keys with values
    * from pathParams map
-   * @param httpOpts 
+   * @param httpOpts
    * @param url string
    * @returns string url
    */
-  private _replacePathParams(httpOpts: HttpRequestOptions, url: string): string {
-    const {pathParams} = httpOpts;
+  private _replacePathParams(
+    httpOpts: HttpRequestOptions,
+    url: string
+  ): string {
+    const { pathParams } = httpOpts;
     if (isObject(pathParams) && !isEmpty(pathParams)) {
       Object.entries(pathParams).forEach(([key, value]) => {
         url = url.replace(`:${key}`, value);
         url = url.replace(`{${key}}`, value);
-      })
+      });
     }
     return url;
   }

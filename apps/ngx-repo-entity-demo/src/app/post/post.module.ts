@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { NgxRepoEntityModule } from 'ngx-repo-entity';
+import { NgxModRepoModule } from 'ngx-modrepo';
 
 import { PostRoutingModule } from './post-routing.module';
-import { Post } from './post.model';
 import { PostRepository } from './post.repository';
 import { PostComponent } from './post/post.component';
 
@@ -12,8 +11,8 @@ import { PostComponent } from './post/post.component';
   imports: [
     CommonModule,
     PostRoutingModule,
-    NgxRepoEntityModule.forFeature([Post]),
+    NgxModRepoModule.forFeature([PostRepository]),
   ],
-  providers: [PostRepository],
+  providers: [],
 })
 export class PostModule {}

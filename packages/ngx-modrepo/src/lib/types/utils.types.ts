@@ -47,7 +47,7 @@ export type AdaptQueryParamsInput = {
   httpOpts: HttpRequestOptions;
 };
 
-export type Adapter<T = unknown, R = T> = {
+export type Adapter<T = unknown | any, R = T> = {
   adaptFromModel: (data: T) => R;
   adaptToModel: (resp: T) => T;
 };

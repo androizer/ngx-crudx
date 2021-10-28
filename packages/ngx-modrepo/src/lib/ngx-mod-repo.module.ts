@@ -1,9 +1,9 @@
 import { CommonModule } from "@angular/common";
 import { HttpClientModule } from "@angular/common/http";
-import { ModuleWithProviders, NgModule } from "@angular/core";
+import { Injector, ModuleWithProviders, NgModule } from "@angular/core";
 
+import { getMetadataStorage } from "./internals";
 import { RepoModelOrSchema } from "./models";
-import { Repository } from "./services";
 import { REPO_ENTITY_DEFAULT_OPTIONS } from "./tokens";
 import { RepoEntityOptions } from "./types";
 import { getRepoProviders } from "./utils";
@@ -11,12 +11,16 @@ import { getRepoProviders } from "./utils";
 @NgModule({
   imports: [CommonModule, HttpClientModule],
 })
-export class NgxRepoEntityModule {
+export class NgxModRepoModule {
+  constructor(injector: Injector) {
+    getMetadataStorage.setInjector(injector);
+  }
+
   static forRoot(
     opts: RepoEntityOptions
-  ): ModuleWithProviders<NgxRepoEntityModule> {
+  ): ModuleWithProviders<NgxModRepoModule> {
     return {
-      ngModule: NgxRepoEntityModule,
+      ngModule: NgxModRepoModule,
       providers: [
         {
           provide: REPO_ENTITY_DEFAULT_OPTIONS,
@@ -28,10 +32,10 @@ export class NgxRepoEntityModule {
 
   static forFeature(
     entities: RepoModelOrSchema[]
-  ): ModuleWithProviders<NgxRepoEntityModule> {
+  ): ModuleWithProviders<NgxModRepoModule> {
     const providers = getRepoProviders(entities);
     return {
-      ngModule: NgxRepoEntityModule,
+      ngModule: NgxModRepoModule,
       providers,
     };
   }

@@ -6,7 +6,7 @@ import { uuid_v4 } from "../utils/";
  * RepoEntity/Entity decorator for class based entity/model functions
  * @param opts `RepoEntityDecoratorOptions`
  */
-function RepoEntity(opts: RepoEntityDecoratorOptions) {
+function RepoEntity(opts: RepoEntityDecoratorOptions): ClassDecorator {
   return function (fn: Function) {
     // Unique ID for `Internal Token Injection`
     // This `ID` should be unique out of all

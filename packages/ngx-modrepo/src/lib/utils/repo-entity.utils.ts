@@ -6,8 +6,8 @@ import { RepoModel, RepoModelOrSchema } from "../models";
 import { Constructable } from "../types";
 
 /**
- * Utility function which will help to decode injection token
- * for the provided entity
+ * Utility function which will help to inject the repository
+ * by decoding the injection token for the provided entity.
  * @param entity
  * @returns Injection Token
  */

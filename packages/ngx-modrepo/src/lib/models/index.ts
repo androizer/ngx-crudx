@@ -8,4 +8,4 @@ export class RepoModel {
   constructor(public _repoOpts?: RepoEntityDecoratorOptions) {}
 }
 
-export type RepoModelOrSchema = Function | RepoModel;
+export type RepoModelOrSchema = Function;

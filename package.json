@@ -6,7 +6,7 @@
   "scripts": {
     "clean": "rimraf node_modules",
     "build": "lerna run build",
-    "build:repo": "lerna run build --scope=ngx-repo-entity",
+    "build:repo": "lerna run build --scope=ngx-modrepo",
     "start:demo": "lerna exec --scope=ngx-repo-entity-demo -- ng serve"
   },
   "workspaces": [

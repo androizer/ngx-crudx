@@ -43,12 +43,16 @@ export type RepoEntityDecoratorOptions = {
 };
 
 type RoutesOptions = {
-  findAll: Partial<RouteOptions>;
-  findOne: Partial<RouteOptions>;
-  createOne: Partial<RouteOptions>;
-  updateOne: Partial<RouteOptions>;
-  replaceOne: Partial<RouteOptions>;
-  deleteOne: Partial<RouteOptions>;
+  findAll: Omit<RouteOptions, "adapter"> & {
+    adapter: Pick<Adapter<any[]>, "adaptToModel">;
+  };
+  findOne: Omit<RouteOptions, "adapter"> & {
+    adapter: Pick<Adapter, "adaptToModel">;
+  };
+  createOne: RouteOptions;
+  updateOne: RouteOptions;
+  replaceOne: RouteOptions;
+  deleteOne: RouteOptions;
 };
 
 type RouteOptions = {
@@ -56,13 +60,13 @@ type RouteOptions = {
    * The path for the individual route (if it's not
    * aligned as per se REST standards for any reason)
    */
-  path: string;
+  path?: string;
   /**
    * Route specific model adapter.
    * @description Always **_override_** the
    * default adapter defined in repo options.
    */
-  adapter: IAdapter;
+  adapter?: IAdapter;
   /**
    * Callback/QueryBuilder for mutating the query params passed via
    * Repo method
