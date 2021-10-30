@@ -1,0 +1,35 @@
+{
+  "name": "ngx-crudx",
+  "version": "1.0.0",
+  "description": "A library for leveraging Repository pattern & Entity in angular apps at scale.",
+  "main": "index.js",
+  "author": "Akki Mahajan",
+  "license": "MIT",
+  "scripts": {
+    "build": "ng-packagr -p package.json",
+    "clean": "rimraf node_modules",
+    "test": "echo \"Write some tests dude!\" && exit 0"
+  },
+  "ngPackage": {
+    "dest": "dist",
+    "lib": {
+      "entryFile": "src/public_api.ts"
+    },
+    "allowedNonPeerDependencies": [
+      "lodash-es"
+    ]
+  },
+  "peerDependencies": {
+    "@angular/common": "^12.2.0",
+    "@angular/core": "^12.2.0",
+    "rxjs": "^6.6.0"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.5",
+    "ng-packagr": "^12.2.0"
+  },
+  "dependencies": {
+    "lodash-es": "^4.17.21",
+    "tslib": "^2.2.0"
+  }
+}

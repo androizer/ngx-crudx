@@ -1,0 +1,13 @@
+0 silly argv {
+0 silly argv   _: [ 'add' ],
+0 silly argv   scope: 'ngx-repo-entity-demo',
+0 silly argv   globs: [ 'class-validator' ],
+0 silly argv   lernaVersion: '4.0.0',
+0 silly argv   '$0': 'C:\\Users\\Akki\\AppData\\Roaming\\npm\\node_modules\\lerna\\cli.js',
+0 silly argv   pkg: 'class-tranformer'
+0 silly argv }
+1 notice cli v4.0.0
+2 verbose rootPath C:\Users\Akki\Desktop\Development\Library\modrepo
+3 info versioning independent
+4 error HttpErrorGeneral: 404 Not Found - GET https://registry.npmjs.org/class-tranformer - Not found
+4 error     at C:\Users\Akki\Desktop\Development\Library\modrepo\node_modules\npm-registry-fetch\check-response.js:95:15
