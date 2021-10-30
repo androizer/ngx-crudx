@@ -1,4 +1,3 @@
-import { RepoModel } from "../models";
 import { RepoEntityDecoratorOptions } from "../types";
 import { uuid_v4 } from "../utils";
 
@@ -12,6 +11,9 @@ function RepoEntity(opts: RepoEntityDecoratorOptions): ClassDecorator {
     // This `ID` should be unique out of all
     // the entities used for `RepoModel` options
     (opts as any).id = uuid_v4();
+    class RepoModel {
+      constructor(public _repoOpts: RepoEntityDecoratorOptions) {}
+    }
     RepoModel.prototype._repoOpts = opts;
     Object.setPrototypeOf(fn.prototype, RepoModel.prototype);
     Object.setPrototypeOf(fn, RepoModel);

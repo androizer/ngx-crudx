@@ -1,6 +1,9 @@
-import { CustomRepository, Repository } from 'ngx-crudx';
+import { Repository } from 'ngx-crudx';
 
 import { User } from '../user.model';
 
-@CustomRepository(User)
-export class UserOpsRepository extends Repository<User> {}
+export class UserOpsRepository extends Repository<User> {
+  constructor() {
+    super(User);
+  }
+}

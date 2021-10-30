@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
+import { Repository, RepoToken } from 'ngx-crudx';
+import { User } from '../user.model';
 import { UserOpsRepository } from './user-ops.repository';
 
 @Component({
@@ -8,7 +10,7 @@ import { UserOpsRepository } from './user-ops.repository';
 })
 export class UserOpsComponent implements OnInit {
 
-  constructor(private readonly userRepo: UserOpsRepository) { }
+  constructor(@Inject(RepoToken(User)) private readonly userRepo: Repository<User>) { }
 
   ngOnInit(): void {
     this.userRepo.findAll().subscribe(resp => {

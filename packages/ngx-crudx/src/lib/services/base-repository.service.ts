@@ -4,7 +4,6 @@ import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 
 import { getMetadataStorage } from "../internals";
-import { REPO_ENTITY_DEFAULT_OPTIONS } from "../tokens";
 import { AnyObject, HttpRequestOptions } from "../types";
 import { AbstractRepository as AbstractRepository } from "./abstract-repository.service";
 
@@ -18,11 +17,11 @@ export class Repository<
   QueryParamType = AnyObject
 > extends AbstractRepository<T, QueryParamType> {
   #httpService: HttpClient;
-  constructor(_injector: Injector = getMetadataStorage.getInjector()) {
-    super(
-      _injector.get(REPO_ENTITY_DEFAULT_OPTIONS),
-      getMetadataStorage.get().instance
-    );
+  constructor(
+    entity: Function,
+    _injector: Injector = getMetadataStorage.getInjector()
+  ) {
+    super(entity, _injector);
     this.#httpService = _injector.get(HttpClient);
   }
 

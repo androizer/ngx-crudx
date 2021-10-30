@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { AnyObject } from 'ngx-crudx';
+import { Component, Inject, OnInit } from '@angular/core';
+import { AnyObject, Repository, RepoToken } from 'ngx-crudx';
 
 import { Post } from '../post.model';
 import { PostRepository } from '../post.repository';
@@ -22,7 +22,8 @@ export class PostComponent implements OnInit {
     // @Inject(RepoToken(Post))
     // private readonly postRepo: Repository<Post>,
     private readonly postRepo: PostRepository
-  ) {}
+  )
+  {}
 
   ngOnInit(): void {
     // --> findAll <--

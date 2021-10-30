@@ -1,3 +1,5 @@
+import { isFunction } from "lodash";
+
 import {
   CircularDependencyException,
   RepoEntityDecoratorMissingException,
@@ -16,13 +18,14 @@ function getRepoEntityToken(entity: RepoModelOrSchema): string {
     throw new CircularDependencyException("@RepoEntity()");
   }
   if (
-    typeof entity === "function" &&
-    !(entity.prototype instanceof RepoModel)
+    isFunction(entity) &&
+    Object.getPrototypeOf(entity).name !== RepoModel.name
   ) {
     throw new RepoEntityDecoratorMissingException(entity);
   }
   const _repoOpts = new (entity as Constructable<RepoModel>)()._repoOpts;
-  return `${(_repoOpts as any).id}${(entity as Function).name}Repository`;
+  const token = `${(_repoOpts as any).id}${entity.name}Repository`;
+  return token;
 }
 
 export { getRepoEntityToken as RepoToken };

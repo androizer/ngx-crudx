@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { NgxModRepoModule } from 'ngx-crudx';
 
 import { PostRoutingModule } from './post-routing.module';
+import { Post } from './post.model';
 import { PostRepository } from './post.repository';
 import { PostComponent } from './post/post.component';
 

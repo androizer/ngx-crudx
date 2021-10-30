@@ -1,10 +1,15 @@
 import { HttpParams } from "@angular/common/http";
-import { Directive } from "@angular/core";
+import { Directive, Injector } from "@angular/core";
 import { isArray, isEmpty, isFunction, isObject } from "lodash";
 import { Observable } from "rxjs";
 
-import { ConnectionNameNotFound } from "../exceptions";
+import {
+  ConnectionNameNotFound,
+  RepoEntityDecoratorMissingException,
+} from "../exceptions";
+import { getMetadataStorage } from "../internals";
 import { RepoModel } from "../models";
+import { REPO_ENTITY_DEFAULT_OPTIONS } from "../tokens";
 import {
   Adapter,
   AnyObject,
@@ -23,11 +28,16 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   implements IRepository<T, QueryParamType>
 {
   protected _repoOpts: RepoEntityDecoratorOptions;
+  protected _rootOpts: RepoEntityOptions;
   constructor(
-    protected readonly _rootOpts?: RepoEntityOptions,
-    _model?: RepoModel
+    _entity: Function,
+    _injector: Injector = getMetadataStorage.getInjector()
   ) {
-    this._repoOpts = _model?._repoOpts;
+    if (Object.getPrototypeOf(_entity).name !== RepoModel.name) {
+      throw new RepoEntityDecoratorMissingException(_entity);
+    }
+    this._rootOpts = _injector.get(REPO_ENTITY_DEFAULT_OPTIONS);
+    this._repoOpts = new (_entity as Constructable<RepoModel>)()._repoOpts;
   }
 
   abstract findAll<R = T>(
