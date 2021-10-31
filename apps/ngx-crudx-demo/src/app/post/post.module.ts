@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { NgxModRepoModule } from 'ngx-crudx';
+import { NgCrudxModule } from 'ngx-crudx';
 
 import { PostRoutingModule } from './post-routing.module';
 import { Post } from './post.model';
@@ -12,7 +12,7 @@ import { PostComponent } from './post/post.component';
   imports: [
     CommonModule,
     PostRoutingModule,
-    NgxModRepoModule.forFeature([PostRepository]),
+    NgCrudxModule.forFeature([PostRepository]),
   ],
   providers: [],
 })

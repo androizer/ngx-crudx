@@ -1,5 +1,5 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { AnyObject, Repository, RepoToken } from 'ngx-crudx';
+import { Component, OnInit } from '@angular/core';
+import { AnyObject } from 'ngx-crudx';
 
 import { Post } from '../post.model';
 import { PostRepository } from '../post.repository';
@@ -18,17 +18,17 @@ type FindAllResponse<T = AnyObject> = {
   styleUrls: ['./post.component.scss'],
 })
 export class PostComponent implements OnInit {
+  resp: AnyObject;
   constructor(
     // @Inject(RepoToken(Post))
     // private readonly postRepo: Repository<Post>,
     private readonly postRepo: PostRepository
-  )
-  {}
+  ) {}
 
   ngOnInit(): void {
     // --> findAll <--
     this.postRepo.findAll<FindAllResponse<Post>>().subscribe((resp) => {
-      console.log(resp);
+      this.resp = resp;
     });
     // --> FindOne <--
     // this.postRepo.findOne(1).subscribe(resp => {

@@ -11,16 +11,16 @@ import { getRepoProviders } from "./utils";
 @NgModule({
   imports: [CommonModule, HttpClientModule],
 })
-export class NgxModRepoModule {
+export class NgCrudxModule {
   constructor(injector: Injector) {
     getMetadataStorage.setInjector(injector);
   }
 
   static forRoot(
     opts: RepoEntityOptions
-  ): ModuleWithProviders<NgxModRepoModule> {
+  ): ModuleWithProviders<NgCrudxModule> {
     return {
-      ngModule: NgxModRepoModule,
+      ngModule: NgCrudxModule,
       providers: [
         {
           provide: REPO_ENTITY_DEFAULT_OPTIONS,
@@ -32,10 +32,10 @@ export class NgxModRepoModule {
 
   static forFeature(
     entities: RepoModelOrSchema[]
-  ): ModuleWithProviders<NgxModRepoModule> {
+  ): ModuleWithProviders<NgCrudxModule> {
     const providers = getRepoProviders(entities);
     return {
-      ngModule: NgxModRepoModule,
+      ngModule: NgCrudxModule,
       providers,
     };
   }
