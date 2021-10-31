@@ -35,8 +35,6 @@ export type RepoEntityDecoratorOptions = {
   /**
    * Callback for mutating the query params passed via
    * Repo method
-   * @description If used as callback, then default mode
-   * is `extend`
    * @returns `HttpParams`
    */
   qs?: (params: AnyObject) => HttpParams | undefined;

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { NgxModRepoModule } from 'ngx-crudx';
+import { NgCrudxModule } from 'ngx-crudx';
 
 import { UserOpsComponent } from './user-ops/user-ops.component';
 import { UserOpsRepository } from './user-ops/user-ops.repository';
@@ -11,7 +11,7 @@ import { User } from './user.model';
   imports: [
     CommonModule,
     UserRoutingModule,
-    NgxModRepoModule.forFeature([User]),
+    NgCrudxModule.forFeature([User]),
   ],
   declarations: [UserOpsComponent],
 })
