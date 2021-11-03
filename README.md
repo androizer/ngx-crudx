@@ -1,4 +1,4 @@
-# Leveraging Entity & Repository pattern in Angular 😎
+# Leveraging Repository pattern + Entity in Angular 😎
 
 > **NOTE: This DOC is under WIP**
 
@@ -31,7 +31,7 @@ or yarn:
 yarn add ngx-crudx
 ```
 
-### 1. Import the NgxCrudxModule
+### Import the NgxCrudxModule
 
 For monolith architecture, a single API server url is needed.
 
@@ -222,77 +222,110 @@ Callback function which mutate/returns a new HttpParams object. The value of the
 
 #### routes?
 
-Object which consist of set of individual routes based configuration.\
-**WIP -> To be continued**.
+Object which consist of set of individual routes based configuration. For every Repository method, there is RouteOption type which is defined below.
 
-## Repository API's
+```typescript
+type RouteOptions = {
+  /**
+   * The path for the individual route
+   */
+  path?: string;
+  /**
+   * Route specific model adapter.
+   * @description Always **_override_** the
+   * default adapter defined in repo options.
+   */
+  adapter?: IAdapter;
+  /**
+   * Callback/QueryBuilder for mutating the query params passed via
+   * Repository method
+   * @description If used as callback, then default mode is `extend`,
+   * else builder params depends upon type of mode respectively.
+   * @returns `HttpParams`
+   */
+  qs?:
+    | RepoQueryBuilder
+    | RepoQueryBuilder<"override">
+    | ((params: HttpParams | AnyObject) => HttpParams);
+};
+```
+
+- **path?**\
+This will override the path formed by `Repository` helper mechanism. This is useful in case your path doesn't match the criteria mentioned in the [Repository API](#repository-api) section.
+
+- **adapter?**\
+If you want to override the _default_ adapter of the model, then we can setup the adapter at the individual route level too. NOTE: This will always **override** the default adapter (if defined).
+
+- **qs?**\
+If you want **extend** the functionality of _query params_ for individual route, pass a callback and return `HttpParams` from it. But if you want to **override** the default `qs` behavior (if defined), then pass the object type like below:
+```typescript
+{
+  mode: 'extend' | 'override',
+  builder<P = B>(params: P): HttpParams | undefined;
+}
+```
+
+## Repository API
 
 Certain methods definitions are present on the **Repository** class. These API are self-explanatory.
 
 #### findAll
 
-> findAll<R = T>(
+```plaintext
+GET /users
+GET /posts
+```
 
-    opts?: HttpRequestOptions<QueryParamType>
-
-): Observable<R extends T ? R[] : R>;
+> findAll<R = T>(opts?: HttpRequestOptions<QueryParamType>): Observable<R extends T ? R[] : R>;
 
 #### findOne
 
-> findOne<R = T>(
+```plaintext
+GET /users/:userId
+GET /users/:userId/posts/:postId
+```
 
-    id: string | number,
-    opts?: HttpRequestOptions<QueryParamType>
-
-): Observable<R>;
-findOne<R = T>(opts: HttpRequestOptions<QueryParamType>): Observable<R>;
+> findOne<R = T>(id: string | number, opts?: HttpRequestOptions<QueryParamType>): Observable<R>;\
+> findOne<R = T>(opts: HttpRequestOptions<QueryParamType>): Observable<R>;
 
 #### createOne
 
-> createOne<R = T>(
+```plaintext
+POST /users
+POST /users/:userId/posts
+```
 
-    payload: AnyObject,
-    opts?: HttpRequestOptions<QueryParamType>
-
-): Observable<R>;
+> createOne<R = T>(payload: AnyObject, opts?: HttpRequestOptions<QueryParamType>): Observable<R>;
 
 #### updateOne
 
-> updateOne<R = T>(
+```plaintext
+PATCH /users/:userId
+PATCH /users/:userId/posts/:postId
+```
 
-    id: string | number,
-    body: Partial<R>,
-    opts?: HttpRequestOptions<QueryParamType>
-
-): Observable<Partial<R>>;\
-updateOne<R = T>(
-body: Partial<R>,
-opts: HttpRequestOptions<QueryParamType>
-): Observable<Partial<R>>;
+> updateOne<R = T>(id: string | number, body: Partial<R>, opts?: HttpRequestOptions<QueryParamType>): Observable<Partial<R>>;\
+> updateOne<R = T>(body: Partial<R>,opts: HttpRequestOptions<QueryParamType>): Observable<Partial<R>>;
 
 #### replaceOne
 
-> replaceOne<R = T>(
+```plaintext
+PUT /users/:userId
+PUT /users/userId/posts/:postId
+```
 
-    id: string | number,
-    body: R,
-    opts?: HttpRequestOptions<QueryParamType>
-
-): Observable<Partial<R>>;\
-replaceOne<R = T>(
-body: R,
-opts: HttpRequestOptions<QueryParamType>
-): Observable<Partial<R>>;
+> replaceOne<R = T>(id: string | number, body: R, opts?: HttpRequestOptions<QueryParamType>): Observable<Partial<R>>;\
+> replaceOne<R = T>( body: R, opts: HttpRequestOptions<QueryParamType> ): Observable<Partial<R>>;
 
 #### deleteOne
 
-> deleteOne<R = any>(
+```plaintext
+DELETE /users/:userId
+DELETE /users/:userId/posts/:postId
+```
 
-    id: string | number,
-    opts?: HttpRequestOptions<QueryParamType>
-
-): Observable<R>;\
-deleteOne<R = any>(opts: HttpRequestOptions<QueryParamType>): Observable<R>;
+> deleteOne<R = any>(id: string | number, opts?: HttpRequestOptions<QueryParamType> ): Observable<R>;\
+> deleteOne<R = any>(opts: HttpRequestOptions<QueryParamType>): Observable<R>;
 
 ## Custom Repository
 
@@ -338,7 +371,7 @@ export class UserModule {}
 
 ## HttpsRequestOptions API's
 
-Many of the properties provided by the `HttpClient's` ***RequestOptions*** share the same signature. The ones, which share the same signature are listed below:
+Many of the properties provided by the `HttpClient's` **_RequestOptions_** share the same signature. The ones, which share the same signature are listed below:
 
 ```typescript
 interface HttpRequestBaseOptions {
@@ -381,19 +414,21 @@ export type HttpRequestOptions<QueryParamType = AnyObject> = Omit<
   pathParams?: Record<string, string>;
 };
 ```
-#### params?
-This is the object which takes key-value pair. The type is defined by the `Repository` class via *Generics*.
 
->export class Repository<
-  T = unknown,
-  QueryParamType = AnyObject> {}
+#### params?
+
+This is the object which takes key-value pair. The type is defined by the `Repository` class via _Generics_.
+
+> export class Repository<T = unknown, QueryParamType = AnyObject> {}
 
 The second generic type is supported for frameworks like [@nestjsx/crud-request](https://github.com/nestjsx/crud/wiki/Requests#frontend-usage) for better type interpolation.
 
 #### pathParams?
-This is the key-value pair object which replaces the *path params* from the `path` property in the `@Entity` decorator.
+
+This is the key-value pair object which replaces the _path params_ from the `path` property in the `@Entity` decorator.
 
 Here is the example.
+
 ```typescript
 @Entity({
   path: 'users/:userId/photos',
@@ -417,19 +452,23 @@ export class PhotoComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.photoRepo.findAll({
-      pathParams: {
-        userId: '123',
-      }
-    }).subscribe(resp => {
-      // do something with resp
-    })
+    this.photoRepo
+      .findAll({
+        pathParams: {
+          userId: "123",
+        },
+      })
+      .subscribe((resp) => {
+        // do something with resp
+      });
   }
 }
 ```
 
 # Contributions
+
 If you like this library or found any bug/typo and want to contribute, PR's are most welcomed.
 
 # License
+
 [MIT](/LICENSE)

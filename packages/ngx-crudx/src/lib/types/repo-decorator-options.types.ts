@@ -42,10 +42,10 @@ export type RepoEntityDecoratorOptions = {
 
 type RoutesOptions = {
   findAll: Omit<RouteOptions, "adapter"> & {
-    adapter: Pick<Adapter<any[]>, "adaptToModel">;
+    adapter?: Pick<Adapter<any[]>, "adaptToModel">;
   };
   findOne: Omit<RouteOptions, "adapter"> & {
-    adapter: Pick<Adapter, "adaptToModel">;
+    adapter?: Pick<Adapter, "adaptToModel">;
   };
   createOne: RouteOptions;
   updateOne: RouteOptions;
@@ -75,7 +75,7 @@ type RouteOptions = {
   qs?:
     | RepoQueryBuilder
     | RepoQueryBuilder<"override">
-    | ((params: HttpParams) => HttpParams);
+    | ((params: HttpParams | AnyObject) => HttpParams);
 };
 
 type IAdapter =
