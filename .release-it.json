@@ -1,0 +1,9 @@
+{
+  "git": {
+    "commitMessage": "chore: release v${version}"
+  },
+  "npm": {
+    "release": true,
+    "publishPath": "./packages/ngx-crudx/dist"
+  }
+}

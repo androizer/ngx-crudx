@@ -1,6 +1,6 @@
 {
   "name": "ngx-crudx",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A library for leveraging Repository pattern & Entity in angular apps at scale.",
   "main": "index.js",
   "author": "Akki Mahajan",
@@ -37,11 +37,6 @@
   "dependencies": {
     "lodash-es": "^4.17.21",
     "tslib": "^2.2.0"
-  },
-  "np": {
-    "yarn": true,
-    "contents": "dist",
-    "2fa": false
   },
   "repository": {
     "type": "git",
