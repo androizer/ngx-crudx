@@ -2,13 +2,10 @@
   "name": "ngx-crudx",
   "version": "1.0.1",
   "description": "A library for leveraging Repository pattern & Entity in angular apps at scale.",
-  "main": "index.js",
   "author": "Akki Mahajan",
   "license": "MIT",
+  "homepage": "https://github.com/androizer/ngx-crudx",
   "private": false,
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "prebuild": "rimraf dist/",
     "build": "ng-packagr -p package.json",
@@ -49,6 +46,15 @@
     "access": "public"
   },
   "release": {
-    "branches": ["master"]
-  }
+    "branches": [
+      "master"
+    ]
+  },
+  "keywords": [
+    "angular",
+    "crudx",
+    "repository",
+    "entity",
+    "dependency-injection"
+  ]
 }
