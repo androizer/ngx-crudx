@@ -20,8 +20,12 @@ jobs:
         run: yarn install
       - name: Bootstrapping
         run: lerna bootstrap
+      - name: Building crudx
+        run: yarn build:crudx
+      - name: Changing dir to dist
+        run: cd packages/ngx-crudx/dist
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: yarn semantic-release
+        run: npx semantic-release

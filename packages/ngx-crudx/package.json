@@ -15,7 +15,6 @@
     "postbuild": "cpy \"../../README.md\" dist/",
     "clean": "rimraf node_modules",
     "test": "echo \"Write some tests dude!\" && exit 0",
-    "presemantic-release": "yarn build",
     "semantic-release": "semantic-release"
   },
   "ngPackage": {
