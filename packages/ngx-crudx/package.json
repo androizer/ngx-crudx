@@ -1,6 +1,6 @@
 {
   "name": "ngx-crudx",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "A library for leveraging Repository pattern & Entity in angular apps at scale.",
   "main": "index.js",
   "author": "Akki Mahajan",
@@ -15,7 +15,6 @@
     "postbuild": "cpy \"../../README.md\" dist/",
     "clean": "rimraf node_modules",
     "test": "echo \"Write some tests dude!\" && exit 0",
-    "presemantic-release": "yarn build",
     "semantic-release": "semantic-release"
   },
   "ngPackage": {
