@@ -1,8 +1,8 @@
-export type RepoEntityOptions =
-  | RepoEntityBaseOptions
-  | Required<RepoEntityBaseOptions>[];
+export type NgCrudxOptions =
+  | NgCrudxBaseOptions
+  | Required<NgCrudxBaseOptions>[];
 
-type RepoEntityBaseOptions = {
+type NgCrudxBaseOptions = {
   /**
    * Absolute path for the REST service where CRUD ops
    * will be taking place

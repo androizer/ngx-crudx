@@ -7,7 +7,8 @@ import {
   RepoQueryBuilder,
 } from "./utils.types";
 
-export type RepoEntityDecoratorOptions = {
+export type RepoEntityOptions = {
+  id: string;
   /**
    * Relative path of the entity (in accordance with basePath)
    * as per the REST spec.
@@ -39,6 +40,8 @@ export type RepoEntityDecoratorOptions = {
    */
   qs?: (params: AnyObject) => HttpParams | undefined;
 };
+
+export type RepoEntityDecoratorOptions = Omit<RepoEntityOptions, "id">;
 
 type RoutesOptions = {
   findAll: Omit<RouteOptions, "adapter"> & {
@@ -78,6 +81,12 @@ type RouteOptions = {
     | ((params: HttpParams | AnyObject) => HttpParams);
 };
 
+/**
+ * @experimental Class based Adapter is `experimental`
+ * at the moment. `Lexical scoping` issue persist when
+ * referencing the model _(which is annotated with
+ * the `@RepoEntity`)_ in the adapter class itself.
+ */
 type IAdapter =
   | Constructable<Adapter>
   | (

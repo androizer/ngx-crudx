@@ -1,9 +1,11 @@
-import { Repository } from 'ngx-crudx';
+import { Injectable } from '@angular/core';
+import { RepositoryMixin } from 'ngx-crudx';
 
 import { User } from '../user.model';
 
-export class UserOpsRepository extends Repository<User> {
+@Injectable()
+export class UserOpsRepository extends RepositoryMixin(User) {
   constructor() {
-    super(User);
+    super();
   }
 }
