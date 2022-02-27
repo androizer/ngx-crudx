@@ -4,8 +4,9 @@ import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 
 import { getMetadataStorage } from "../internals";
-import { AnyObject, HttpRequestOptions } from "../types";
-import { AbstractRepository as AbstractRepository } from "./abstract-repository.service";
+import { AbstractRepository } from "./abstract-repository.service";
+
+import type { AnyObject, HttpRequestOptions } from "../types";
 
 /**
  * Repository is supposed to work with your entity objects.
@@ -14,12 +15,12 @@ import { AbstractRepository as AbstractRepository } from "./abstract-repository.
 @Injectable()
 export class Repository<
   T = unknown,
-  QueryParamType = AnyObject
+  QueryParamType = AnyObject,
 > extends AbstractRepository<T, QueryParamType> {
   #httpService: HttpClient;
   constructor(
     entity: Function,
-    _injector: Injector = getMetadataStorage.getInjector()
+    _injector: Injector = getMetadataStorage.getInjector(),
   ) {
     super(entity, _injector);
     this.#httpService = _injector.get(HttpClient);
@@ -29,10 +30,10 @@ export class Repository<
    * Find all entities that match the given options or conditions.
    */
   findAll<R = T>(
-    opts: HttpRequestOptions<QueryParamType> = {}
+    opts: HttpRequestOptions<QueryParamType> = {},
   ): Observable<R extends T ? R[] : R> {
     const url = super.getUrl(opts, "findAll");
-    let params = super.adaptQueryParam(opts, "findAll");
+    const params = super.adaptQueryParam(opts, "findAll");
     return this.#httpService
       .get<R[]>(url.toString(), { ...opts, params })
       .pipe(map((resp) => super.adaptToModel(resp, "findAll")));
@@ -43,7 +44,7 @@ export class Repository<
    */
   findOne<R = T>(
     idOrOpts: string | number | HttpRequestOptions,
-    opts: HttpRequestOptions = {}
+    opts: HttpRequestOptions = {},
   ): Observable<R> {
     if (typeof idOrOpts === "object") {
       opts = idOrOpts;
@@ -80,7 +81,7 @@ export class Repository<
   updateOne<R = T>(
     idOrBody: string | number | Partial<R>,
     bodyOrOpts: Partial<R> | HttpRequestOptions = {},
-    opts: HttpRequestOptions = {}
+    opts: HttpRequestOptions = {},
   ): Observable<Partial<R>> {
     let body;
     if (typeof idOrBody === "object") {
@@ -106,7 +107,7 @@ export class Repository<
   replaceOne<R = T>(
     idOrBody: string | number | R,
     bodyOrOpts: R | HttpRequestOptions = {},
-    opts: HttpRequestOptions = {}
+    opts: HttpRequestOptions = {},
   ): Observable<Partial<R>> {
     let body;
     if (typeof idOrBody === "object") {
@@ -128,7 +129,7 @@ export class Repository<
    */
   deleteOne<R = any>(
     idOrOpts: string | number | HttpRequestOptions,
-    opts: HttpRequestOptions = {}
+    opts: HttpRequestOptions = {},
   ): Observable<R> {
     if (typeof idOrOpts === "object") {
       opts = idOrOpts;

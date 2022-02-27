@@ -1,6 +1,7 @@
 import { InjectionToken } from "@angular/core";
 
-import { RepoEntityOptions } from "../types";
+import { NgCrudxOptions } from "../types";
 
-export const REPO_ENTITY_DEFAULT_OPTIONS =
-  new InjectionToken<RepoEntityOptions>("REPO_ENTITY_DEFAULT_OPTIONS");
+export const REPO_ENTITY_DEFAULT_OPTIONS = new InjectionToken<NgCrudxOptions>(
+  "REPO_ENTITY_DEFAULT_OPTIONS",
+);

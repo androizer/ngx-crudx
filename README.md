@@ -1,10 +1,44 @@
-# Leveraging Repository pattern + Entity in Angular 😎
+# Leveraging Repository pattern + Entity in Angular 😎 <!-- omit in toc -->
+
+[![npm version](https://badge.fury.io/js/ngx-crudx.svg)](https://badge.fury.io/js/ngx-crudx)
+[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/)
 
 > **NOTE: This DOC is under WIP**
 
 `ngx-crudx` is a tool which help us to build highly scalable angular apps. Developers find Entity and Repository pattern familiar with ORM (eg. TypeORM), but certain mechanism was missing on the frontend architecture. In order to follow proper DRY principles, its better to use single Repository for each Entity to perform REST operations _(findAll, findOne, createOne etc.)_ using various configurations.
 
 > `ngx-crudx` is highly influenced by [TypeORM](https://github.com/typeorm/typeorm) & [NestJS TypeORM](https://github.com/nestjs/typeorm) wrapper. 🙌
+
+## Table of Contents <!-- omit in toc -->
+
+- [Features](#features)
+- [Installation](#installation)
+  - [Import the NgCrudxModule](#import-the-ngcrudxmodule)
+- [Step-by-Step Guide](#step-by-step-guide)
+  - [Create a Model](#create-a-model)
+  - [Create an Entity](#create-an-entity)
+  - [Create a Repository](#create-a-repository)
+  - [Using the Repository](#using-the-repository)
+- [@Entity API's](#entity-apis)
+  - [path](#path)
+  - [name?](#name)
+  - [adapter?](#adapter)
+  - [qs?](#qs)
+  - [routes?](#routes)
+- [Repository API](#repository-api)
+  - [findAll](#findall)
+  - [findOne](#findone)
+  - [createOne](#createone)
+  - [updateOne](#updateone)
+  - [replaceOne](#replaceone)
+  - [deleteOne](#deleteone)
+- [Custom Repository](#custom-repository)
+- [HttpsRequestOptions API's](#httpsrequestoptions-apis)
+  - [params?](#params)
+  - [pathParams?](#pathparams)
+- [Known Issues](#known-issues)
+- [Contributions](#contributions)
+- [License](#license)
 
 ## Features
 
@@ -31,19 +65,19 @@ or yarn:
 yarn add ngx-crudx
 ```
 
-### Import the NgxCrudxModule
+### Import the NgCrudxModule
 
 For monolith architecture, a single API server url is needed.
 
 ```typescript
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
-import { NgxCrudxModule } from "ngx-crudx";
+import { NgCrudxModule } from "ngx-crudx";
 
 @NgModule({
   imports: [
     BrowserModule,
-    NgxCrudxModule.forRoot({
+    NgCrudxModule.forRoot({
       basePath: "http://localhost:3000",
       name: "DEFAULT", // Optional and defaults to DEFAULT
     }),
@@ -58,12 +92,12 @@ For micro-services architecture, multiple API server url can be configured.
 ```typescript
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
-import { NgxCrudxModule } from "ngx-crudx";
+import { NgCrudxModule } from "ngx-crudx";
 
 @NgModule({
   imports: [
     BrowserModule,
-    NgxCrudxModule.forRoot([
+    NgCrudxModule.forRoot([
       {
         basePath: "http://localhost:3001/auth-service",
         name: "AUTH_SERVICE", // Required
@@ -172,7 +206,7 @@ import { User } from "../user.model";
 })
 export class UserComponent {
   constructor(
-    @Inject(RepoToken(User)) private readonly userRepo: Repository<User>
+    @Inject(RepoToken(User)) private readonly userRepo: Repository<User>,
   ) {}
 }
 ```
@@ -181,21 +215,24 @@ export class UserComponent {
 
 Here are the detailed explanation for the `Entity` API's
 
-#### path:
+### path
 
 This property represents the path for entity on the backend API layer.
 
 > e.g. 'users', 'posts', 'comments'
 
-The path passed to the **forRoot** method on `ngx-crudx` will be base-path and the `path` property represents the logical location. **eg**. http://localhost:3000/users
+The path passed to the **forRoot** method on `ngx-crudx` will be base-path and the `path` property represents the logical location. **eg**. <http://localhost:3000/users>
 
-#### name?:
+### name?
 
 The name of the connection name to which the current path is being appended to. Defaults to **DEFAULT**.
 
-#### adapter?:
+### adapter?
 
-The name applies as a `Adapter` layer. This will help in transforming the body (if any) before requesting and payload after receiving response. The value must be a class or instance of class which implements `Adapter`.
+The name applies as a `Adapter` layer. This will help in transforming the body (if any) before requesting and payload after receiving response. The value must be an instance of class or _**actual class\***_ which implements `Adapter`.
+
+> Note: Class based Adapter services is experimental at the moment. Lexical scoping issue **_might_** persist when referencing the model **_(which is annotated with the @RepoEntity)_** in the adapter service itself. In order to deal with lexical scoping, `NgxCrudx` will register the adapter service itself into the `DI context` when the _Entity/Model_ annotated with the `@RepoEntity/@Entity` decorator is processed.\
+> **Kindly don't register _Adapter_ services in the Module's `provider` array which are used by _Entity/Model_.**
 
 ```typescript
 export type Adapter<T = unknown | any, R = T> = {
@@ -214,13 +251,13 @@ export type Adapter<T = unknown | any, R = T> = {
 };
 ```
 
-#### qs?
+### qs?
 
 Callback function which mutate/returns a new HttpParams object. The value of the param is the value passed as **params** to `HttpRequestOptions`.
 
 > (params: AnyObject) => HttpParams | undefined;
 
-#### routes?
+### routes?
 
 Object which consist of set of individual routes based configuration. For every Repository method, there is RouteOption type which is defined below.
 
@@ -251,13 +288,14 @@ type RouteOptions = {
 ```
 
 - **path?**\
-This will override the path formed by `Repository` helper mechanism. This is useful in case your path doesn't match the criteria mentioned in the [Repository API](#repository-api) section.
+  This will override the path formed by `Repository` helper mechanism. This is useful in case your path doesn't match the criteria mentioned in the [Repository API](#repository-api) section.
 
 - **adapter?**\
-If you want to override the _default_ adapter of the model, then we can setup the adapter at the individual route level too. NOTE: This will always **override** the default adapter (if defined).
+  If you want to override the _default_ adapter of the model, then we can setup the adapter at the individual route level too. NOTE: This will always **override** the default adapter (if defined).
 
 - **qs?**\
-If you want **extend** the functionality of _query params_ for individual route, pass a callback and return `HttpParams` from it. But if you want to **override** the default `qs` behavior (if defined), then pass the object type like below:
+  If you want **extend** the functionality of _query params_ for individual route, pass a callback and return `HttpParams` from it. But if you want to **override** the default `qs` behavior (if defined), then pass the object type like below:
+
 ```typescript
 {
   mode: 'extend' | 'override',
@@ -269,7 +307,7 @@ If you want **extend** the functionality of _query params_ for individual route,
 
 Certain methods definitions are present on the **Repository** class. These API are self-explanatory.
 
-#### findAll
+### findAll
 
 ```plaintext
 GET /users
@@ -278,7 +316,7 @@ GET /posts
 
 > findAll<R = T>(opts?: HttpRequestOptions<QueryParamType>): Observable<R extends T ? R[] : R>;
 
-#### findOne
+### findOne
 
 ```plaintext
 GET /users/:userId
@@ -288,7 +326,7 @@ GET /users/:userId/posts/:postId
 > findOne<R = T>(id: string | number, opts?: HttpRequestOptions<QueryParamType>): Observable<R>;\
 > findOne<R = T>(opts: HttpRequestOptions<QueryParamType>): Observable<R>;
 
-#### createOne
+### createOne
 
 ```plaintext
 POST /users
@@ -297,7 +335,7 @@ POST /users/:userId/posts
 
 > createOne<R = T>(payload: AnyObject, opts?: HttpRequestOptions<QueryParamType>): Observable<R>;
 
-#### updateOne
+### updateOne
 
 ```plaintext
 PATCH /users/:userId
@@ -307,7 +345,7 @@ PATCH /users/:userId/posts/:postId
 > updateOne<R = T>(id: string | number, body: Partial<R>, opts?: HttpRequestOptions<QueryParamType>): Observable<Partial<R>>;\
 > updateOne<R = T>(body: Partial<R>,opts: HttpRequestOptions<QueryParamType>): Observable<Partial<R>>;
 
-#### replaceOne
+### replaceOne
 
 ```plaintext
 PUT /users/:userId
@@ -317,7 +355,7 @@ PUT /users/userId/posts/:postId
 > replaceOne<R = T>(id: string | number, body: R, opts?: HttpRequestOptions<QueryParamType>): Observable<Partial<R>>;\
 > replaceOne<R = T>( body: R, opts: HttpRequestOptions<QueryParamType> ): Observable<Partial<R>>;
 
-#### deleteOne
+### deleteOne
 
 ```plaintext
 DELETE /users/:userId
@@ -415,15 +453,17 @@ export type HttpRequestOptions<QueryParamType = AnyObject> = Omit<
 };
 ```
 
-#### params?
+### params?
 
 This is the object which takes key-value pair. The type is defined by the `Repository` class via _Generics_.
 
+> ```typescript
 > export class Repository<T = unknown, QueryParamType = AnyObject> {}
+> ```
 
 The second generic type is supported for frameworks like [@nestjsx/crud-request](https://github.com/nestjsx/crud/wiki/Requests#frontend-usage) for better type interpolation.
 
-#### pathParams?
+### pathParams?
 
 This is the key-value pair object which replaces the _path params_ from the `path` property in the `@Entity` decorator.
 
@@ -448,7 +488,7 @@ The `userId` will be replaced at runtime via **pathParam** property.
 })
 export class PhotoComponent implements OnInit {
   constructor(
-    @Inject(RepoToken(Photo)) private readonly photoRepo: Repository<Photo>
+    @Inject(RepoToken(Photo)) private readonly photoRepo: Repository<Photo>,
   ) {}
 
   ngOnInit() {
@@ -465,10 +505,53 @@ export class PhotoComponent implements OnInit {
 }
 ```
 
-# Contributions
+## Known Issues
+
+Class based Adapter services is experimental at the moment. Lexical scoping issue **_might_** persist when referencing the model **_(which is annotated with the @RepoEntity)_** in the adapter service itself. In order to deal with lexical scoping, `NgxCrudx` will register the adapter service itself into the `DI context` when the _Entity/Model_ annotated with the `@RepoEntity/@Entity` decorator is processed.
+
+> **Kindly don't register _Adapter_ services in the Module's `provider` array which are used by _Entity/Model_.**
+
+```typescript
+// user.entity.ts
+@RepoEntity({
+  path: "user",
+  routes: {
+    createOne: {
+      adapter: UserAdapter
+    }
+  }
+})
+class User {
+  ...
+}
+
+// user.adapter.ts
+import {User} from './entities';
+
+@Injectable()
+export class UserAdapter implements Adapter<User> {
+  adaptFromModel(data: User) {
+    return classToPlain(data);
+  }
+
+  adaptToModel(resp: AnyObject) {
+    return plainToClass(User, resp);
+  }
+}
+
+// user.module.ts
+@NgModule({
+  imports: [CommonModuleNgCrudxModule.forFeature([User])],
+  declarations: [UserComponent],
+  providers: [UserAdapter], // ❌ don't register adapter service.
+})
+export class UserModule {}
+```
+
+## Contributions
 
 If you like this library or found any bug/typo and want to contribute, PR's are most welcomed.
 
-# License
+## License
 
 [MIT](/LICENSE)
