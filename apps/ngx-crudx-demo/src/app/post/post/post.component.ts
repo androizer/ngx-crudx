@@ -22,7 +22,7 @@ export class PostComponent implements OnInit {
   constructor(
     // @Inject(RepoToken(Post))
     // private readonly postRepo: Repository<Post>,
-    private readonly postRepo: PostRepository
+    private readonly postRepo: PostRepository,
   ) {}
 
   ngOnInit(): void {

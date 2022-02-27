@@ -4,19 +4,31 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "prepare": "husky install",
     "clean": "rimraf node_modules",
     "build": "lerna run build",
     "build:crudx": "lerna run build --scope=ngx-crudx",
     "start:demo": "lerna exec --scope=ngx-crudx-demo -- ng serve",
-    "semantic-release": "lerna exec --scope=ngx-crudx -- yarn semantic-release"
+    "semantic-release": "lerna exec --scope=ngx-crudx -- yarn semantic-release",
+    "lint": "eslint '*/**/*.ts' --quiet --fix"
   },
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "devDependencies": {
-    "@types/node": "12",
+    "@types/node": "16",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "commitizen": "4.2.4",
+    "cz-conventional-changelog": "3.3.0",
+    "eslint": "^8.10.0",
+    "eslint-config-prettier": "^8.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "husky": "7.0.4",
     "lerna": "^4.0.0",
+    "lint-staged": ">=10",
+    "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "semantic-release": "^19.0.2",
     "typescript": "4.3.5"
@@ -24,5 +36,13 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/androizer/ngx-crudx.git"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "*.ts": "eslint --fix"
   }
 }
