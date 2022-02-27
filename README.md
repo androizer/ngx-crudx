@@ -40,6 +40,7 @@
   - [pathParams?](#pathparams)
 - [Known Issues](#known-issues)
 - [Contributions](#contributions)
+  - [Commit Message Format](#commit-message-format)
 - [License](#license)
 
 ## Features
@@ -553,6 +554,24 @@ export class UserModule {}
 ## Contributions
 
 If you like this library or found any bug/typo and want to contribute, PR's are most welcomed.
+
+For major changes, please open an issue first to discuss what you would like to change.
+
+Our commit messages are formatted according to [Conventional Commits](https://conventionalcommits.org/), hence this repository has [commitizen](https://github.com/commitizen/cz-cli) support enabled. Commitizen can help you generate your commit messages automatically.
+
+And to use it, simply call git commit. The tool will help you generate a commit message that follows the below guidelines.
+
+### Commit Message Format
+
+Each commit message consists of a header, a body and a footer. The header has a special format that includes a type, an optional scope and a subject:
+
+```plaintext
+<type>(<scope>): <subject>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
 
 ## License
 
