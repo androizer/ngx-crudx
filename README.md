@@ -1,5 +1,7 @@
 # Leveraging Repository pattern + Entity in Angular 😎 <!-- omit in toc -->
 
+![The Crew](/crudx-logo.svg)
+
 [![npm version](https://badge.fury.io/js/ngx-crudx.svg)](https://badge.fury.io/js/ngx-crudx)
 [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/)
 
