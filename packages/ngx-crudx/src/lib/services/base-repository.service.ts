@@ -33,10 +33,10 @@ export class Repository<
     opts: HttpRequestOptions<QueryParamType> = {},
   ): Observable<R extends T ? R[] : R> {
     const url = super.getUrl(opts, "findAll");
-    const params = super.adaptQueryParam(opts, "findAll");
+    const params = super.transformQueryParam(opts, "findAll");
     return this.#httpService
       .get<R[]>(url.toString(), { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "findAll")));
+      .pipe(map((resp) => super.transformToEntity(resp, "findAll")));
   }
 
   /**
@@ -50,10 +50,10 @@ export class Repository<
       opts = idOrOpts;
     }
     const url = super.getUrl(opts, "findOne", idOrOpts);
-    const params = super.adaptQueryParam(opts, "findOne");
+    const params = super.transformQueryParam(opts, "findOne");
     return this.#httpService
       .get<R>(url.toString(), { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "findOne")));
+      .pipe(map((resp) => super.transformToEntity(resp, "findOne")));
   }
 
   /**
@@ -65,11 +65,11 @@ export class Repository<
    */
   createOne<R = T>(payload, opts: HttpRequestOptions = {}): Observable<R> {
     const url = super.getUrl(opts, "createOne");
-    const params = super.adaptQueryParam(opts, "createOne");
-    payload = super.adaptFromModel(payload, "createOne");
+    const params = super.transformQueryParam(opts, "createOne");
+    payload = super.transformFromEntity(payload, "createOne");
     return this.#httpService
       .post<R>(url.toString(), payload, { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "createOne")));
+      .pipe(map((resp) => super.transformToEntity(resp, "createOne")));
   }
 
   /**
@@ -91,11 +91,11 @@ export class Repository<
       body = bodyOrOpts;
     }
     const url = super.getUrl(opts, "updateOne", idOrBody);
-    const params = super.adaptQueryParam(opts, "updateOne");
-    body = super.adaptFromModel(body, "updateOne");
+    const params = super.transformQueryParam(opts, "updateOne");
+    body = super.transformFromEntity(body, "updateOne");
     return this.#httpService
       .patch<R>(url.toString(), body, { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "updateOne")));
+      .pipe(map((resp) => super.transformToEntity(resp, "updateOne")));
   }
 
   /**
@@ -117,11 +117,11 @@ export class Repository<
       body = bodyOrOpts;
     }
     const url = super.getUrl(opts, "replaceOne", idOrBody);
-    const params = super.adaptQueryParam(opts, "replaceOne");
-    body = super.adaptFromModel(body, "replaceOne");
+    const params = super.transformQueryParam(opts, "replaceOne");
+    body = super.transformFromEntity(body, "replaceOne");
     return this.#httpService
       .put<R>(url.toString(), body, { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "replaceOne")));
+      .pipe(map((resp) => super.transformToEntity(resp, "replaceOne")));
   }
 
   /**
@@ -135,7 +135,7 @@ export class Repository<
       opts = idOrOpts;
     }
     const url = super.getUrl(opts, "deleteOne", idOrOpts);
-    const params = super.adaptQueryParam(opts, "deleteOne");
+    const params = super.transformQueryParam(opts, "deleteOne");
     return this.#httpService.delete<R>(url.toString(), { ...opts, params });
   }
 }

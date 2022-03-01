@@ -12,7 +12,7 @@ import { RepoModel } from "../models";
 import { REPO_ENTITY_DEFAULT_OPTIONS } from "../tokens";
 
 import type {
-  Adapter,
+  Transform,
   AnyObject,
   Constructable,
   HttpRequestOptions,
@@ -135,7 +135,7 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    * @param httpOpts `HttpRequestOptions`
    * @returns `HttpParams`
    */
-  protected adaptQueryParam(
+  protected transformQueryParam(
     httpOpts: HttpRequestOptions,
     key: keyof RepoEntityOptions["routes"],
   ): HttpParams | undefined {
@@ -162,7 +162,10 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    * Callback which will transform the model (body)
    * after receiving the response.
    */
-  protected adaptToModel(resp: any, key: keyof RepoEntityOptions["routes"]) {
+  protected transformToEntity(
+    resp: any,
+    key: keyof RepoEntityOptions["routes"],
+  ) {
     return this._fetchAdapterAndTransform("to", resp, key);
   }
 
@@ -170,7 +173,10 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    * Callback which will transform the model (body)
    * before sending the request.
    */
-  protected adaptFromModel(model: any, key: keyof RepoEntityOptions["routes"]) {
+  protected transformFromEntity(
+    model: any,
+    key: keyof RepoEntityOptions["routes"],
+  ) {
     return this._fetchAdapterAndTransform("from", model, key);
   }
 
@@ -192,8 +198,8 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     key: keyof RepoEntityOptions["routes"],
   ) {
     let data = payload;
-    const decoAdapter = this._repoOpts.adapter;
-    const decoRouteAdapter = this._repoOpts.routes?.[key]?.adapter;
+    const decoAdapter = this._repoOpts.transform;
+    const decoRouteAdapter = this._repoOpts.routes?.[key]?.transform;
     if (decoRouteAdapter) {
       data = this._adaptToFromModel(mode, payload, decoRouteAdapter);
     } else if (decoAdapter) {
@@ -205,7 +211,7 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   /**
    * @param mode 'to' | 'from'
    * @param payload
-   * @param adapter IAdapter (this is not exported as of yet)
+   * @param adapter ITransform (this is not exported as of yet)
    * @returns
    */
   private _adaptToFromModel(
@@ -218,13 +224,13 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
       const instance = this._injector.get(adapter);
       data =
         mode === "to"
-          ? instance.adaptToModel(payload)
-          : instance.adaptFromModel(payload);
+          ? instance.transformToEntity(payload)
+          : instance.transformFromEntity(payload);
     } else if (isObject(adapter) && !isEmpty(adapter)) {
       data =
         mode === "to"
-          ? (adapter as Adapter).adaptToModel?.(payload) ?? data
-          : (adapter as Adapter).adaptFromModel?.(payload) ?? data;
+          ? (adapter as Transform).transformToEntity?.(payload) ?? data
+          : (adapter as Transform).transformFromEntity?.(payload) ?? data;
     }
     return data;
   }

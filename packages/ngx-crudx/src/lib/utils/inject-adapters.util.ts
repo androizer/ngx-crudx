@@ -19,7 +19,7 @@ function _injectAdapter(
   ): boolean => funcs.some((func) => func.name === adapter.name);
   const paths = (obj = {}): Constructable<Function>[] => {
     return Object.entries(obj).reduce((product, [key, value]) => {
-      if (key === "adapter" && isFunction(value)) {
+      if (key === "transform" && isFunction(value)) {
         const found = isAdapterExist(product, value);
         if (!found) {
           return product.concat(value);

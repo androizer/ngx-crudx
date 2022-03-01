@@ -7,8 +7,8 @@ import { UserAdapter } from './user-adapter.service';
   path: 'users',
   routes: {
     findAll: {
-      adapter: {
-        adaptToModel: (resp) => {
+      transform: {
+        transformToEntity: (resp) => {
           return resp.map((item) => {
             return plainToClass(User, item);
           });
@@ -16,7 +16,7 @@ import { UserAdapter } from './user-adapter.service';
       },
     },
     createOne: {
-      adapter: UserAdapter,
+      transform: UserAdapter,
     },
   },
 })

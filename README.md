@@ -24,7 +24,7 @@
 - [@Entity API's](#entity-apis)
   - [path](#path)
   - [name?](#name)
-  - [adapter?](#adapter)
+  - [transform?](#transform)
   - [qs?](#qs)
   - [routes?](#routes)
 - [Repository API](#repository-api)
@@ -230,27 +230,27 @@ The path passed to the **forRoot** method on `ngx-crudx` will be base-path and t
 
 The name of the connection name to which the current path is being appended to. Defaults to **DEFAULT**.
 
-### adapter?
+### transform?
 
-The name applies as a `Adapter` layer. This will help in transforming the body (if any) before requesting and payload after receiving response. The value must be an instance of class or _**actual class\***_ which implements `Adapter`.
+The name applies as a `Adapter` layer. This will help in transforming the body (if any) before requesting and payload after receiving response. The value must be an instance of class or _**actual class\***_ which implements `Transform`.
 
-> Note: Class based Adapter services is experimental at the moment. Lexical scoping issue **_might_** persist when referencing the model **_(which is annotated with the @RepoEntity)_** in the adapter service itself. In order to deal with lexical scoping, `NgxCrudx` will register the adapter service itself into the `DI context` when the _Entity/Model_ annotated with the `@RepoEntity/@Entity` decorator is processed.\
-> **Kindly don't register _Adapter_ services in the Module's `provider` array which are used by _Entity/Model_.**
+> Note: Class based Adapter/Transform services is experimental at the moment. Lexical scoping issue **_might_** persist when referencing the model **_(which is annotated with the @RepoEntity)_** in the adapter service itself. In order to deal with lexical scoping, `NgxCrudx` will register the adapter/transform service itself into the `DI context` when the _Entity/Model_ annotated with the `@RepoEntity/@Entity` decorator is processed.\
+> **Kindly don't register _Adapter/Transform_ services in the Module's `provider` array which are used by _Entity/Model_.**
 
 ```typescript
-export type Adapter<T = unknown | any, R = T> = {
+export type Transform<T = unknown | any, R = T> = {
   /**
    * Transform the Entity (T) type to arbitrary (which backend API expects) type R
    * @description Callback invoked when transforming body to
    * certain type which the backend API expects (R).
    */
-  adaptFromModel: (data: T) => R;
+  transformFromEntity: (data: T) => R;
   /**
    * Transform the payload received to Entity (T) type.
    * @description Callback invoked when transforming response
    * payload to type `Entity`.
    */
-  adaptToModel: (resp: R) => T;
+  transformToEntity: (resp: R) => T;
 };
 ```
 
@@ -271,11 +271,11 @@ type RouteOptions = {
    */
   path?: string;
   /**
-   * Route specific model adapter.
+   * Route specific model adapter/transformer.
    * @description Always **_override_** the
    * default adapter defined in repo options.
    */
-  adapter?: IAdapter;
+  transform?: ITransform;
   /**
    * Callback/QueryBuilder for mutating the query params passed via
    * Repository method
@@ -293,8 +293,8 @@ type RouteOptions = {
 - **path?**\
   This will override the path formed by `Repository` helper mechanism. This is useful in case your path doesn't match the criteria mentioned in the [Repository API](#repository-api) section.
 
-- **adapter?**\
-  If you want to override the _default_ adapter of the model, then we can setup the adapter at the individual route level too. NOTE: This will always **override** the default adapter (if defined).
+- **transform?**\
+  If you want to override the _default_ adapter/transformer of the model, then we can setup the adapter at the individual route level too. NOTE: This will always **override** the default transformer (if defined).
 
 - **qs?**\
   If you want **extend** the functionality of _query params_ for individual route, pass a callback and return `HttpParams` from it. But if you want to **override** the default `qs` behavior (if defined), then pass the object type like below:
@@ -510,9 +510,9 @@ export class PhotoComponent implements OnInit {
 
 ## Known Issues
 
-Class based Adapter services is experimental at the moment. Lexical scoping issue **_might_** persist when referencing the model **_(which is annotated with the @RepoEntity)_** in the adapter service itself. In order to deal with lexical scoping, `NgxCrudx` will register the adapter service itself into the `DI context` when the _Entity/Model_ annotated with the `@RepoEntity/@Entity` decorator is processed.
+Class based Adapter/Transformer services is experimental at the moment. Lexical scoping issue **_might_** persist when referencing the model **_(which is annotated with the @RepoEntity)_** in the adapter service itself. In order to deal with lexical scoping, `NgxCrudx` will register the adapter/transformer service itself into the `DI context` when the _Entity/Model_ annotated with the `@RepoEntity/@Entity` decorator is processed.
 
-> **Kindly don't register _Adapter_ services in the Module's `provider` array which are used by _Entity/Model_.**
+> **Kindly don't register _Adapter/Transformer_ services in the Module's `provider` array which are used by _Entity/Model_.**
 
 ```typescript
 // user.entity.ts
@@ -520,7 +520,7 @@ Class based Adapter services is experimental at the moment. Lexical scoping issu
   path: "user",
   routes: {
     createOne: {
-      adapter: UserAdapter
+      transform: UserAdapter
     }
   }
 })
@@ -532,12 +532,12 @@ class User {
 import {User} from './entities';
 
 @Injectable()
-export class UserAdapter implements Adapter<User> {
-  adaptFromModel(data: User) {
+export class UserAdapter implements Transform<User> {
+  transformFromEntity(data: User) {
     return classToPlain(data);
   }
 
-  adaptToModel(resp: AnyObject) {
+  transformToEntity(resp: AnyObject) {
     return plainToClass(User, resp);
   }
 }

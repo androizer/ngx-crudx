@@ -1,7 +1,7 @@
 import { HttpParams } from "@angular/common/http";
 
 import {
-  Adapter,
+  Transform,
   AnyObject,
   Constructable,
   RepoQueryBuilder,
@@ -32,7 +32,7 @@ export type RepoEntityOptions = {
    * Class Model or it's instance that will help in modifying the
    * payload **in (getting response) and out (sending request).**
    */
-  adapter?: IAdapter;
+  transform?: ITransform;
   /**
    * Callback for mutating the query params passed via
    * Repo method
@@ -44,11 +44,11 @@ export type RepoEntityOptions = {
 export type RepoEntityDecoratorOptions = Omit<RepoEntityOptions, "id">;
 
 type RoutesOptions = {
-  findAll: Omit<RouteOptions, "adapter"> & {
-    adapter?: Pick<Adapter<any[]>, "adaptToModel">;
+  findAll: Omit<RouteOptions, "transform"> & {
+    transform?: Pick<Transform<any[]>, "transformToEntity">;
   };
-  findOne: Omit<RouteOptions, "adapter"> & {
-    adapter?: Pick<Adapter, "adaptToModel">;
+  findOne: Omit<RouteOptions, "transform"> & {
+    transform?: Pick<Transform, "transformToEntity">;
   };
   createOne: RouteOptions;
   updateOne: RouteOptions;
@@ -63,11 +63,11 @@ type RouteOptions = {
    */
   path?: string;
   /**
-   * Route specific model adapter.
+   * Route specific model adapter/transformer.
    * @description Always **_override_** the
    * default adapter defined in repo options.
    */
-  adapter?: IAdapter;
+  transform?: ITransform;
   /**
    * Callback/QueryBuilder for mutating the query params passed via
    * Repo method
@@ -87,12 +87,12 @@ type RouteOptions = {
  * referencing the model _(which is annotated with
  * the `@RepoEntity`)_ in the adapter class itself.
  */
-type IAdapter =
-  | Constructable<Adapter>
+type ITransform =
+  | Constructable<Transform>
   | (
-      | Required<Adapter>
-      | (Pick<Adapter, "adaptFromModel"> &
-          Partial<Pick<Adapter, "adaptToModel">>)
-      | (Pick<Adapter, "adaptToModel"> &
-          Partial<Pick<Adapter, "adaptFromModel">>)
+      | Required<Transform>
+      | (Pick<Transform, "transformFromEntity"> &
+          Partial<Pick<Transform, "transformToEntity">>)
+      | (Pick<Transform, "transformToEntity"> &
+          Partial<Pick<Transform, "transformFromEntity">>)
     );
