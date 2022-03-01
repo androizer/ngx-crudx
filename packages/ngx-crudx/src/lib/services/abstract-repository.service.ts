@@ -28,8 +28,8 @@ const DEFAULT_CONNECTION_NAME = "DEFAULT";
 export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   implements IRepository<T, QueryParamType>
 {
-  protected _repoOpts: RepoEntityOptions;
-  protected _rootOpts: NgCrudxOptions;
+  #repoOpts: RepoEntityOptions;
+  #rootOpts: NgCrudxOptions;
   constructor(
     _entity: Function,
     private readonly _injector: Injector = getMetadataStorage.getInjector(),
@@ -37,8 +37,8 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     if (Object.getPrototypeOf(_entity).name !== RepoModel.name) {
       throw new RepoEntityDecoratorMissingException(_entity);
     }
-    this._rootOpts = this._injector.get(REPO_ENTITY_DEFAULT_OPTIONS);
-    this._repoOpts = new (_entity as Constructable<RepoModel>)()._repoOpts;
+    this.#rootOpts = this._injector.get(REPO_ENTITY_DEFAULT_OPTIONS);
+    this.#repoOpts = new (_entity as Constructable<RepoModel>)()._repoOpts;
   }
 
   abstract findAll<R = T>(
@@ -93,20 +93,20 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     key: keyof RepoEntityOptions["routes"],
     optionalPath?,
   ): URL {
-    const connectionName = this._repoOpts.name ?? DEFAULT_CONNECTION_NAME;
+    const connectionName = this.#repoOpts.name ?? DEFAULT_CONNECTION_NAME;
     let optionFound;
-    if (isArray(this._rootOpts)) {
-      optionFound = this._rootOpts.find(
+    if (isArray(this.#rootOpts)) {
+      optionFound = this.#rootOpts.find(
         (item) =>
           item.name.toLowerCase() === DEFAULT_CONNECTION_NAME.toLowerCase(),
       );
       if (!optionFound) {
         throw new ConnectionNameNotFound(connectionName);
       }
-    } else if (isObject(this._rootOpts) && !isEmpty(this._rootOpts)) {
+    } else if (isObject(this.#rootOpts) && !isEmpty(this.#rootOpts)) {
       // If user supplied different connection name and not equal to default,
       // then throw ConnectionNameNotFound error.
-      optionFound = this._rootOpts;
+      optionFound = this.#rootOpts;
       if (
         connectionName.toLowerCase() !==
         (optionFound.name ?? DEFAULT_CONNECTION_NAME).toLowerCase()
@@ -115,10 +115,10 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
       }
     }
     const route =
-      this._repoOpts.routes?.[key]?.path ??
+      this.#repoOpts.routes?.[key]?.path ??
       (optionalPath && !isObject(optionalPath)
-        ? `${this._repoOpts.path}/${optionalPath}`
-        : `${this._repoOpts.path}`);
+        ? `${this.#repoOpts.path}/${optionalPath}`
+        : `${this.#repoOpts.path}`);
     const url = new URL(route, optionFound.basePath);
     // replace the url content with path params if exists
     url.href = this._replacePathParams(httpOpts, url.href);
@@ -139,8 +139,8 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     httpOpts: HttpRequestOptions,
     key: keyof RepoEntityOptions["routes"],
   ): HttpParams | undefined {
-    const decoQs = this._repoOpts.qs;
-    const routeQs = this._repoOpts.routes?.[key]?.qs;
+    const decoQs = this.#repoOpts.qs;
+    const routeQs = this.#repoOpts.routes?.[key]?.qs;
     let params: HttpParams;
     // if route qs is object and not empty, then check for mode
     if (isObject(routeQs) && !isEmpty(routeQs)) {
@@ -198,8 +198,8 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     key: keyof RepoEntityOptions["routes"],
   ) {
     let data = payload;
-    const decoAdapter = this._repoOpts.transform;
-    const decoRouteAdapter = this._repoOpts.routes?.[key]?.transform;
+    const decoAdapter = this.#repoOpts.transform;
+    const decoRouteAdapter = this.#repoOpts.routes?.[key]?.transform;
     if (decoRouteAdapter) {
       data = this._adaptToFromModel(mode, payload, decoRouteAdapter);
     } else if (decoAdapter) {

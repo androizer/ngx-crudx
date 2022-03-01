@@ -3,7 +3,7 @@ import { RepoModel } from "../models";
 import { Repository } from "../services";
 import { Constructable } from "../types";
 
-type Constructor = new (...args: any[]) => {};
+type Constructor<T = {}> = new (...args: any[]) => T;
 
 /**
  * Repository is supposed to work with your entity objects.
@@ -11,11 +11,12 @@ type Constructor = new (...args: any[]) => {};
  */
 function RepositoryMixin<TBase extends Constructor>(_entity: TBase) {
   getMetadataStorage.setRepoModel(_entity as Constructable<RepoModel>);
-  return class extends Repository<InstanceType<TBase>> {
+  const Model = class extends Repository<InstanceType<TBase>> {
     constructor() {
       super(_entity);
     }
   };
+  return Model as unknown as Constructor<Repository<TBase>>;
 }
 
 export { RepositoryMixin };
