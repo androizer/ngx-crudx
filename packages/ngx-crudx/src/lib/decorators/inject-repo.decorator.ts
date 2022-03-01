@@ -9,6 +9,6 @@ import { RepoToken } from "../utils";
  * @returns `Inject` Decorator
  */
 export const InjectRepository: (
-  entity: RepoModelOrSchema
+  entity: RepoModelOrSchema,
 ) => ParameterDecorator = (entity: RepoModelOrSchema) =>
   Inject(RepoToken(entity));

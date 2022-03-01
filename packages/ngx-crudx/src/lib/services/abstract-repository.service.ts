@@ -10,14 +10,15 @@ import {
 import { getMetadataStorage } from "../internals";
 import { RepoModel } from "../models";
 import { REPO_ENTITY_DEFAULT_OPTIONS } from "../tokens";
-import {
-  Adapter,
+
+import type {
+  Transform,
   AnyObject,
   Constructable,
   HttpRequestOptions,
   IRepository,
-  RepoEntityDecoratorOptions,
   RepoEntityOptions,
+  NgCrudxOptions,
   RepoQueryBuilder,
 } from "../types";
 
@@ -27,57 +28,57 @@ const DEFAULT_CONNECTION_NAME = "DEFAULT";
 export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   implements IRepository<T, QueryParamType>
 {
-  protected _repoOpts: RepoEntityDecoratorOptions;
-  protected _rootOpts: RepoEntityOptions;
+  protected _repoOpts: RepoEntityOptions;
+  protected _rootOpts: NgCrudxOptions;
   constructor(
     _entity: Function,
-    _injector: Injector = getMetadataStorage.getInjector()
+    private readonly _injector: Injector = getMetadataStorage.getInjector(),
   ) {
     if (Object.getPrototypeOf(_entity).name !== RepoModel.name) {
       throw new RepoEntityDecoratorMissingException(_entity);
     }
-    this._rootOpts = _injector.get(REPO_ENTITY_DEFAULT_OPTIONS);
+    this._rootOpts = this._injector.get(REPO_ENTITY_DEFAULT_OPTIONS);
     this._repoOpts = new (_entity as Constructable<RepoModel>)()._repoOpts;
   }
 
   abstract findAll<R = T>(
-    opts?: HttpRequestOptions<QueryParamType>
+    opts?: HttpRequestOptions<QueryParamType>,
   ): Observable<R extends T ? R[] : R>;
   abstract findOne<R = T>(
     id: string | number,
-    opts?: HttpRequestOptions<QueryParamType>
+    opts?: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
   abstract findOne<R = T>(
-    opts: HttpRequestOptions<QueryParamType>
+    opts: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
   abstract createOne<R = T>(
     payload: AnyObject,
-    opts?: HttpRequestOptions<QueryParamType>
+    opts?: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
   abstract updateOne<R = T>(
     id: string | number,
     body: Partial<R>,
-    opts?: HttpRequestOptions<QueryParamType>
+    opts?: HttpRequestOptions<QueryParamType>,
   ): Observable<Partial<R>>;
   abstract updateOne<R = T>(
     body: Partial<R>,
-    opts: HttpRequestOptions<QueryParamType>
+    opts: HttpRequestOptions<QueryParamType>,
   ): Observable<Partial<R>>;
   abstract replaceOne<R = T>(
     id: string | number,
     body: R,
-    opts?: HttpRequestOptions<QueryParamType>
+    opts?: HttpRequestOptions<QueryParamType>,
   ): Observable<Partial<R>>;
   abstract replaceOne<R = T>(
     body: R,
-    opts: HttpRequestOptions<QueryParamType>
+    opts: HttpRequestOptions<QueryParamType>,
   ): Observable<Partial<R>>;
   abstract deleteOne<R = any>(
     id: string | number,
-    opts?: HttpRequestOptions<QueryParamType>
+    opts?: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
   abstract deleteOne<R = any>(
-    opts: HttpRequestOptions<QueryParamType>
+    opts: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
 
   /**
@@ -89,15 +90,15 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    */
   protected getUrl(
     httpOpts: HttpRequestOptions,
-    key: keyof RepoEntityDecoratorOptions["routes"],
-    optionalPath?
+    key: keyof RepoEntityOptions["routes"],
+    optionalPath?,
   ): URL {
     const connectionName = this._repoOpts.name ?? DEFAULT_CONNECTION_NAME;
     let optionFound;
     if (isArray(this._rootOpts)) {
       optionFound = this._rootOpts.find(
         (item) =>
-          item.name.toLowerCase() === DEFAULT_CONNECTION_NAME.toLowerCase()
+          item.name.toLowerCase() === DEFAULT_CONNECTION_NAME.toLowerCase(),
       );
       if (!optionFound) {
         throw new ConnectionNameNotFound(connectionName);
@@ -134,23 +135,23 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    * @param httpOpts `HttpRequestOptions`
    * @returns `HttpParams`
    */
-  protected adaptQueryParam(
+  protected transformQueryParam(
     httpOpts: HttpRequestOptions,
-    key: keyof RepoEntityDecoratorOptions["routes"]
+    key: keyof RepoEntityOptions["routes"],
   ): HttpParams | undefined {
-    let decoQs = this._repoOpts.qs;
-    let routeQs = this._repoOpts.routes?.[key]?.qs;
+    const decoQs = this._repoOpts.qs;
+    const routeQs = this._repoOpts.routes?.[key]?.qs;
     let params: HttpParams;
     // if route qs is object and not empty, then check for mode
     if (isObject(routeQs) && !isEmpty(routeQs)) {
       if ((routeQs as RepoQueryBuilder<"override">).mode === "override") {
         return (routeQs as RepoQueryBuilder<"override">).builder(
-          httpOpts.params
+          httpOpts.params,
         );
       } else {
         params = decoQs?.(httpOpts.params);
         return (routeQs as RepoQueryBuilder)?.builder(
-          params ?? httpOpts.params
+          params ?? httpOpts.params,
         );
       }
     }
@@ -161,9 +162,9 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    * Callback which will transform the model (body)
    * after receiving the response.
    */
-  protected adaptToModel(
+  protected transformToEntity(
     resp: any,
-    key: keyof RepoEntityDecoratorOptions["routes"]
+    key: keyof RepoEntityOptions["routes"],
   ) {
     return this._fetchAdapterAndTransform("to", resp, key);
   }
@@ -172,9 +173,9 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    * Callback which will transform the model (body)
    * before sending the request.
    */
-  protected adaptFromModel(
+  protected transformFromEntity(
     model: any,
-    key: keyof RepoEntityDecoratorOptions["routes"]
+    key: keyof RepoEntityOptions["routes"],
   ) {
     return this._fetchAdapterAndTransform("from", model, key);
   }
@@ -194,11 +195,11 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   private _fetchAdapterAndTransform(
     mode: "to" | "from",
     payload: any,
-    key: keyof RepoEntityDecoratorOptions["routes"]
+    key: keyof RepoEntityOptions["routes"],
   ) {
     let data = payload;
-    const decoAdapter = this._repoOpts.adapter;
-    const decoRouteAdapter = this._repoOpts.routes?.[key]?.adapter;
+    const decoAdapter = this._repoOpts.transform;
+    const decoRouteAdapter = this._repoOpts.routes?.[key]?.transform;
     if (decoRouteAdapter) {
       data = this._adaptToFromModel(mode, payload, decoRouteAdapter);
     } else if (decoAdapter) {
@@ -210,26 +211,26 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   /**
    * @param mode 'to' | 'from'
    * @param payload
-   * @param adapter IAdapter (this is not exported as of yet)
+   * @param adapter ITransform (this is not exported as of yet)
    * @returns
    */
   private _adaptToFromModel(
     mode: "to" | "from",
     payload: unknown,
-    adapter: unknown
+    adapter: unknown,
   ) {
     let data = payload;
     if (isFunction(adapter)) {
-      const instance = new (adapter as unknown as Constructable<Adapter>)();
+      const instance = this._injector.get(adapter);
       data =
         mode === "to"
-          ? instance.adaptToModel(payload)
-          : instance.adaptFromModel(payload);
+          ? instance.transformToEntity(payload)
+          : instance.transformFromEntity(payload);
     } else if (isObject(adapter) && !isEmpty(adapter)) {
       data =
         mode === "to"
-          ? (adapter as Adapter).adaptToModel(payload)
-          : (adapter as Adapter).adaptFromModel(payload);
+          ? (adapter as Transform).transformToEntity?.(payload) ?? data
+          : (adapter as Transform).transformFromEntity?.(payload) ?? data;
     }
     return data;
   }
@@ -243,7 +244,7 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    */
   private _replacePathParams(
     httpOpts: HttpRequestOptions,
-    url: string
+    url: string,
   ): string {
     const { pathParams } = httpOpts;
     if (isObject(pathParams) && !isEmpty(pathParams)) {

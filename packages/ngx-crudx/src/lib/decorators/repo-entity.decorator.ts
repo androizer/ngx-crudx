@@ -1,4 +1,4 @@
-import { RepoEntityDecoratorOptions } from "../types";
+import { RepoEntityOptions, RepoEntityDecoratorOptions } from "../types";
 import { uuid_v4 } from "../utils";
 
 /**
@@ -7,14 +7,15 @@ import { uuid_v4 } from "../utils";
  */
 function RepoEntity(opts: RepoEntityDecoratorOptions): ClassDecorator {
   return function (fn: Function) {
+    const _opts = opts as RepoEntityOptions;
     // Unique ID for `Internal Token Injection`
     // This `ID` should be unique out of all
     // the entities used for `RepoModel` options
-    (opts as any).id = uuid_v4();
+    _opts.id = uuid_v4();
     class RepoModel {
-      constructor(public _repoOpts: RepoEntityDecoratorOptions) {}
+      constructor(public _repoOpts: RepoEntityOptions) {}
     }
-    RepoModel.prototype._repoOpts = opts;
+    RepoModel.prototype._repoOpts = _opts;
     Object.setPrototypeOf(fn.prototype, RepoModel.prototype);
     Object.setPrototypeOf(fn, RepoModel);
   };

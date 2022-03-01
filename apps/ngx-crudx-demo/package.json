@@ -21,7 +21,7 @@
     "@angular/router": "~12.2.0",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
-    "ngx-crudx": "^1.0.0",
+    "ngx-crudx": "^1.0.4",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~6.6.0",
     "tslib": "^2.3.0",

@@ -1,9 +1,10 @@
 import { HttpContext, HttpHeaders, HttpParams } from "@angular/common/http";
 
-import { RepoEntityDecoratorOptions } from "./repo-decorator-options.types";
-import { RepoEntityOptions } from "./repo-options.types";
+import { RepoEntityOptions } from "./repo-decorator-options.types";
+import { NgCrudxOptions } from "./repo-options.types";
 
 export type AnyObject = Record<string, any>;
+export type uuid = string;
 
 interface HttpRequestBaseOptions {
   headers?:
@@ -42,24 +43,24 @@ export type HttpRequestOptions<QueryParamType = AnyObject> = Omit<
 };
 
 export type AdaptQueryParamsInput = {
-  rootOpts: RepoEntityOptions;
-  decoratorOpts: RepoEntityDecoratorOptions;
+  rootOpts: NgCrudxOptions;
+  decoratorOpts: RepoEntityOptions;
   httpOpts: HttpRequestOptions;
 };
 
-export type Adapter<T = unknown | any, R = T> = {
+export type Transform<T = unknown | any, R = T> = {
   /**
-   * Transform the Entity (T) type to arbitrary (which backend API expects) type R
+   * Transform the Entity `T` type to arbitrary (which backend API expects) type `R`
    * @description Callback invoked when transforming body to
    * certain type which the backend API expects (R).
    */
-  adaptFromModel: (data: T) => R;
+  transformFromEntity(data: T): R;
   /**
-   * Transform the payload received to Entity (T) type.
+   * Transform the payload received to instance of Entity type `T`.
    * @description Callback invoked when transforming response
    * payload to type `Entity`.
    */
-  adaptToModel: (resp: R) => T;
+  transformToEntity(resp: R): T;
 };
 
 export type Constructable<T> = {
@@ -68,7 +69,7 @@ export type Constructable<T> = {
 
 export type RepoQueryBuilder<
   M = "extend",
-  B = M extends "extend" ? HttpParams : AnyObject
+  B = M extends "extend" ? HttpParams : AnyObject,
 > = {
   /**
    * Mode of operation

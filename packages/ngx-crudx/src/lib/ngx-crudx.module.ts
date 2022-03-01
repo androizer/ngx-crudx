@@ -5,7 +5,7 @@ import { Injector, ModuleWithProviders, NgModule } from "@angular/core";
 import { getMetadataStorage } from "./internals";
 import { RepoModelOrSchema } from "./models";
 import { REPO_ENTITY_DEFAULT_OPTIONS } from "./tokens";
-import { RepoEntityOptions } from "./types";
+import { NgCrudxOptions } from "./types";
 import { getRepoProviders } from "./utils";
 
 @NgModule({
@@ -16,9 +16,7 @@ export class NgCrudxModule {
     getMetadataStorage.setInjector(injector);
   }
 
-  static forRoot(
-    opts: RepoEntityOptions
-  ): ModuleWithProviders<NgCrudxModule> {
+  static forRoot(opts: NgCrudxOptions): ModuleWithProviders<NgCrudxModule> {
     return {
       ngModule: NgCrudxModule,
       providers: [
@@ -31,7 +29,7 @@ export class NgCrudxModule {
   }
 
   static forFeature(
-    entities: RepoModelOrSchema[]
+    entities: RepoModelOrSchema[],
   ): ModuleWithProviders<NgCrudxModule> {
     const providers = getRepoProviders(entities);
     return {

@@ -4,8 +4,9 @@ import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 
 import { getMetadataStorage } from "../internals";
-import { AnyObject, HttpRequestOptions } from "../types";
-import { AbstractRepository as AbstractRepository } from "./abstract-repository.service";
+import { AbstractRepository } from "./abstract-repository.service";
+
+import type { AnyObject, HttpRequestOptions } from "../types";
 
 /**
  * Repository is supposed to work with your entity objects.
@@ -14,12 +15,12 @@ import { AbstractRepository as AbstractRepository } from "./abstract-repository.
 @Injectable()
 export class Repository<
   T = unknown,
-  QueryParamType = AnyObject
+  QueryParamType = AnyObject,
 > extends AbstractRepository<T, QueryParamType> {
   #httpService: HttpClient;
   constructor(
     entity: Function,
-    _injector: Injector = getMetadataStorage.getInjector()
+    _injector: Injector = getMetadataStorage.getInjector(),
   ) {
     super(entity, _injector);
     this.#httpService = _injector.get(HttpClient);
@@ -29,13 +30,13 @@ export class Repository<
    * Find all entities that match the given options or conditions.
    */
   findAll<R = T>(
-    opts: HttpRequestOptions<QueryParamType> = {}
+    opts: HttpRequestOptions<QueryParamType> = {},
   ): Observable<R extends T ? R[] : R> {
     const url = super.getUrl(opts, "findAll");
-    let params = super.adaptQueryParam(opts, "findAll");
+    const params = super.transformQueryParam(opts, "findAll");
     return this.#httpService
       .get<R[]>(url.toString(), { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "findAll")));
+      .pipe(map((resp) => super.transformToEntity(resp, "findAll")));
   }
 
   /**
@@ -43,16 +44,16 @@ export class Repository<
    */
   findOne<R = T>(
     idOrOpts: string | number | HttpRequestOptions,
-    opts: HttpRequestOptions = {}
+    opts: HttpRequestOptions = {},
   ): Observable<R> {
     if (typeof idOrOpts === "object") {
       opts = idOrOpts;
     }
     const url = super.getUrl(opts, "findOne", idOrOpts);
-    const params = super.adaptQueryParam(opts, "findOne");
+    const params = super.transformQueryParam(opts, "findOne");
     return this.#httpService
       .get<R>(url.toString(), { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "findOne")));
+      .pipe(map((resp) => super.transformToEntity(resp, "findOne")));
   }
 
   /**
@@ -64,11 +65,11 @@ export class Repository<
    */
   createOne<R = T>(payload, opts: HttpRequestOptions = {}): Observable<R> {
     const url = super.getUrl(opts, "createOne");
-    const params = super.adaptQueryParam(opts, "createOne");
-    payload = super.adaptFromModel(payload, "createOne");
+    const params = super.transformQueryParam(opts, "createOne");
+    payload = super.transformFromEntity(payload, "createOne");
     return this.#httpService
       .post<R>(url.toString(), payload, { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "createOne")));
+      .pipe(map((resp) => super.transformToEntity(resp, "createOne")));
   }
 
   /**
@@ -80,7 +81,7 @@ export class Repository<
   updateOne<R = T>(
     idOrBody: string | number | Partial<R>,
     bodyOrOpts: Partial<R> | HttpRequestOptions = {},
-    opts: HttpRequestOptions = {}
+    opts: HttpRequestOptions = {},
   ): Observable<Partial<R>> {
     let body;
     if (typeof idOrBody === "object") {
@@ -90,11 +91,11 @@ export class Repository<
       body = bodyOrOpts;
     }
     const url = super.getUrl(opts, "updateOne", idOrBody);
-    const params = super.adaptQueryParam(opts, "updateOne");
-    body = super.adaptFromModel(body, "updateOne");
+    const params = super.transformQueryParam(opts, "updateOne");
+    body = super.transformFromEntity(body, "updateOne");
     return this.#httpService
       .patch<R>(url.toString(), body, { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "updateOne")));
+      .pipe(map((resp) => super.transformToEntity(resp, "updateOne")));
   }
 
   /**
@@ -106,7 +107,7 @@ export class Repository<
   replaceOne<R = T>(
     idOrBody: string | number | R,
     bodyOrOpts: R | HttpRequestOptions = {},
-    opts: HttpRequestOptions = {}
+    opts: HttpRequestOptions = {},
   ): Observable<Partial<R>> {
     let body;
     if (typeof idOrBody === "object") {
@@ -116,11 +117,11 @@ export class Repository<
       body = bodyOrOpts;
     }
     const url = super.getUrl(opts, "replaceOne", idOrBody);
-    const params = super.adaptQueryParam(opts, "replaceOne");
-    body = super.adaptFromModel(body, "replaceOne");
+    const params = super.transformQueryParam(opts, "replaceOne");
+    body = super.transformFromEntity(body, "replaceOne");
     return this.#httpService
       .put<R>(url.toString(), body, { ...opts, params })
-      .pipe(map((resp) => super.adaptToModel(resp, "replaceOne")));
+      .pipe(map((resp) => super.transformToEntity(resp, "replaceOne")));
   }
 
   /**
@@ -128,13 +129,13 @@ export class Repository<
    */
   deleteOne<R = any>(
     idOrOpts: string | number | HttpRequestOptions,
-    opts: HttpRequestOptions = {}
+    opts: HttpRequestOptions = {},
   ): Observable<R> {
     if (typeof idOrOpts === "object") {
       opts = idOrOpts;
     }
     const url = super.getUrl(opts, "deleteOne", idOrOpts);
-    const params = super.adaptQueryParam(opts, "deleteOne");
+    const params = super.transformQueryParam(opts, "deleteOne");
     return this.#httpService.delete<R>(url.toString(), { ...opts, params });
   }
 }

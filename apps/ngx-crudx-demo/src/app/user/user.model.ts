@@ -1,29 +1,36 @@
 import { plainToClass, Type } from 'class-transformer';
 import { RepoEntity } from 'ngx-crudx';
 
+import { UserAdapter } from './user-adapter.service';
+
 @RepoEntity({
   path: 'users',
   routes: {
     findAll: {
-      adapter: {
-        adaptToModel: (resp) => {
-          return resp.map(item => plainToClass(User, item))
-        }
-      }
-    }
-  }
+      transform: {
+        transformToEntity: (resp) => {
+          return resp.map((item) => {
+            return plainToClass(User, item);
+          });
+        },
+      },
+    },
+    createOne: {
+      transform: UserAdapter,
+    },
+  },
 })
 export class User {
-  id: string;
+  id: number;
   name: string;
   username: string;
   email: string;
   @Type(() => Address)
-  address: Address;
+  address?: Address;
   phone: string;
   website: string;
   @Type(() => Company)
-  company: Company;
+  company?: Company;
 }
 
 export class Address {
