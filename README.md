@@ -375,13 +375,13 @@ There is a scenario where basic CRUD isn't just enough. You may need to add more
 Here is how to define a **Custom Repository**:
 
 ```typescript
-import { Repository } from "ngx-crudx";
+import { RepositoryMixin } from "ngx-crudx";
 
 import { User } from "../user.model";
 
-export class UserRepository extends Repository<User> {
+export class UserRepository extends RepositoryMixin(User) {
   constructor() {
-    super(User); // Pass the Entity to the base class
+    super();
   }
 
   findByName(name: string) {
