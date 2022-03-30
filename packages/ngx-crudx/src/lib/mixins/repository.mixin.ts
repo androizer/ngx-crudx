@@ -1,7 +1,7 @@
 import { getMetadataStorage } from "../internals";
 import { RepoModel } from "../models";
 import { Repository } from "../services";
-import { Constructable } from "../types";
+import { AnyObject, Constructable } from "../types";
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
@@ -9,14 +9,18 @@ type Constructor<T = {}> = new (...args: any[]) => T;
  * Repository is supposed to work with your entity objects.
  * Find entities, create, update, delete, etc.
  */
-function RepositoryMixin<TBase extends Constructor>(_entity: TBase) {
+function RepositoryMixin<TBase extends Constructor, QueryParamType = AnyObject>(
+  _entity: TBase,
+) {
   getMetadataStorage.setRepoModel(_entity as Constructable<RepoModel>);
-  const Model = class extends Repository<InstanceType<TBase>> {
+  const Model = class extends Repository {
     constructor() {
       super(_entity);
     }
   };
-  return Model as unknown as Constructor<Repository<TBase>>;
+  return Model as unknown as Constructor<
+    Repository<InstanceType<TBase>, QueryParamType>
+  >;
 }
 
 export { RepositoryMixin };
