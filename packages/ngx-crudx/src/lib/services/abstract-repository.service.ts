@@ -119,7 +119,7 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
       (optionalPath && !isObject(optionalPath)
         ? `${this.#repoOpts.path}/${optionalPath}`
         : `${this.#repoOpts.path}`);
-    const url = new URL(route, optionFound.basePath);
+    const url = new URL(`./${route}`, `${optionFound.basePath}/`);
     // replace the url content with path params if exists
     url.href = this._replacePathParams(httpOpts, url.href);
     return url;
