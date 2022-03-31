@@ -1,6 +1,6 @@
 import { HttpParams } from "@angular/common/http";
 import { Directive, Injector } from "@angular/core";
-import { isArray, isEmpty, isFunction, isObject } from "lodash";
+import { isArray, isEmpty, isFunction, isObject } from "lodash-es";
 import { Observable } from "rxjs";
 
 import {
