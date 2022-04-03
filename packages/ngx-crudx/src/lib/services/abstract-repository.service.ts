@@ -1,6 +1,6 @@
 import { HttpParams } from "@angular/common/http";
 import { Directive, Injector } from "@angular/core";
-import { isArray, isEmpty, isFunction, isObject } from "lodash";
+import { isArray, isEmpty, isFunction, isObject } from "lodash-es";
 import { Observable } from "rxjs";
 
 import {
@@ -20,6 +20,7 @@ import type {
   RepoEntityOptions,
   NgCrudxOptions,
   RepoQueryBuilder,
+  HttpRequestBaseOptions,
 } from "../types";
 
 const DEFAULT_CONNECTION_NAME = "DEFAULT";
@@ -80,6 +81,12 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   abstract deleteOne<R = any>(
     opts: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
+  abstract request<R = any>(
+    method: string,
+    path: string,
+    opts?: HttpRequestBaseOptions &
+      Pick<HttpRequestOptions<AnyObject>, "transform" | "pathParams">,
+  ): Observable<R>;
 
   /**
    * Transform url based on of basePath on either
@@ -90,15 +97,14 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    */
   protected getUrl(
     httpOpts: HttpRequestOptions,
-    key: keyof RepoEntityOptions["routes"],
+    key: keyof RepoEntityOptions["routes"] | "request",
     optionalPath?,
   ): URL {
     const connectionName = this.#repoOpts.name ?? DEFAULT_CONNECTION_NAME;
     let optionFound;
     if (isArray(this.#rootOpts)) {
       optionFound = this.#rootOpts.find(
-        (item) =>
-          item.name.toLowerCase() === DEFAULT_CONNECTION_NAME.toLowerCase(),
+        (item) => item.name.toLowerCase() === connectionName.toLowerCase(),
       );
       if (!optionFound) {
         throw new ConnectionNameNotFound(connectionName);
@@ -115,10 +121,12 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
       }
     }
     const route =
+      httpOpts.path ??
       this.#repoOpts.routes?.[key]?.path ??
       (optionalPath && !isObject(optionalPath)
         ? `${this.#repoOpts.path}/${optionalPath}`
         : `${this.#repoOpts.path}`);
+
     const url = new URL(`./${route}`, `${optionFound.basePath}/`);
     // replace the url content with path params if exists
     url.href = this._replacePathParams(httpOpts, url.href);
@@ -163,10 +171,11 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    * after receiving the response.
    */
   protected transformToEntity(
-    resp: any,
-    key: keyof RepoEntityOptions["routes"],
+    httpOpts: HttpRequestOptions,
+    resPayload: any,
+    key: keyof RepoEntityOptions["routes"] | "request",
   ) {
-    return this._fetchAdapterAndTransform("to", resp, key);
+    return this._fetchAdapterAndTransform("to", httpOpts, resPayload, key);
   }
 
   /**
@@ -174,10 +183,11 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    * before sending the request.
    */
   protected transformFromEntity(
-    model: any,
-    key: keyof RepoEntityOptions["routes"],
+    httpOpts: HttpRequestOptions,
+    reqPayload: any,
+    key: keyof RepoEntityOptions["routes"] | "request",
   ) {
-    return this._fetchAdapterAndTransform("from", model, key);
+    return this._fetchAdapterAndTransform("from", httpOpts, reqPayload, key);
   }
 
   /**
@@ -194,13 +204,24 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
    */
   private _fetchAdapterAndTransform(
     mode: "to" | "from",
+    httpOpts: HttpRequestOptions,
     payload: any,
-    key: keyof RepoEntityOptions["routes"],
+    key: keyof RepoEntityOptions["routes"] | "request",
   ) {
     let data = payload;
+    const httpAdapter = httpOpts.transform;
     const decoAdapter = this.#repoOpts.transform;
     const decoRouteAdapter = this.#repoOpts.routes?.[key]?.transform;
-    if (decoRouteAdapter) {
+
+    if (httpAdapter) {
+      // If httpAdapter have "none" value, then no need to transform payload
+      // This condition can't be merged with the above condition since we don't
+      // want the above condition to be falsy due to "none" value and fallback
+      // to else if. This is intended to work like this.
+      if (httpAdapter !== "none") {
+        data = this._adaptToFromModel(mode, payload, httpAdapter);
+      }
+    } else if (decoRouteAdapter) {
       data = this._adaptToFromModel(mode, payload, decoRouteAdapter);
     } else if (decoAdapter) {
       data = this._adaptToFromModel(mode, payload, decoAdapter);

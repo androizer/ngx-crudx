@@ -1,13 +1,18 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, Injector } from "@angular/core";
+import { cloneDeep } from "lodash-es";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
 
 import { getMetadataStorage } from "../internals";
 import { AbstractRepository } from "./abstract-repository.service";
 
-import type { AnyObject, HttpRequestOptions } from "../types";
-
+import type {
+  AnyObject,
+  HttpMethod,
+  HttpRequestBaseOptions,
+  HttpRequestOptions,
+} from "../types";
 /**
  * Repository is supposed to work with your entity objects.
  * Find entities, create, update, delete, etc.
@@ -36,7 +41,7 @@ export class Repository<
     const params = super.transformQueryParam(opts, "findAll");
     return this.#httpService
       .get<R[]>(url.toString(), { ...opts, params })
-      .pipe(map((resp) => super.transformToEntity(resp, "findAll")));
+      .pipe(map((resp) => super.transformToEntity(opts, resp, "findAll")));
   }
 
   /**
@@ -53,7 +58,7 @@ export class Repository<
     const params = super.transformQueryParam(opts, "findOne");
     return this.#httpService
       .get<R>(url.toString(), { ...opts, params })
-      .pipe(map((resp) => super.transformToEntity(resp, "findOne")));
+      .pipe(map((resp) => super.transformToEntity(opts, resp, "findOne")));
   }
 
   /**
@@ -66,10 +71,10 @@ export class Repository<
   createOne<R = T>(payload, opts: HttpRequestOptions = {}): Observable<R> {
     const url = super.getUrl(opts, "createOne");
     const params = super.transformQueryParam(opts, "createOne");
-    payload = super.transformFromEntity(payload, "createOne");
+    payload = super.transformFromEntity(opts, payload, "createOne");
     return this.#httpService
       .post<R>(url.toString(), payload, { ...opts, params })
-      .pipe(map((resp) => super.transformToEntity(resp, "createOne")));
+      .pipe(map((resp) => super.transformToEntity(opts, resp, "createOne")));
   }
 
   /**
@@ -92,10 +97,10 @@ export class Repository<
     }
     const url = super.getUrl(opts, "updateOne", idOrBody);
     const params = super.transformQueryParam(opts, "updateOne");
-    body = super.transformFromEntity(body, "updateOne");
+    body = super.transformFromEntity(opts, body, "updateOne");
     return this.#httpService
       .patch<R>(url.toString(), body, { ...opts, params })
-      .pipe(map((resp) => super.transformToEntity(resp, "updateOne")));
+      .pipe(map((resp) => super.transformToEntity(opts, resp, "updateOne")));
   }
 
   /**
@@ -118,10 +123,10 @@ export class Repository<
     }
     const url = super.getUrl(opts, "replaceOne", idOrBody);
     const params = super.transformQueryParam(opts, "replaceOne");
-    body = super.transformFromEntity(body, "replaceOne");
+    body = super.transformFromEntity(opts, body, "replaceOne");
     return this.#httpService
       .put<R>(url.toString(), body, { ...opts, params })
-      .pipe(map((resp) => super.transformToEntity(resp, "replaceOne")));
+      .pipe(map((resp) => super.transformToEntity(opts, resp, "replaceOne")));
   }
 
   /**
@@ -137,5 +142,30 @@ export class Repository<
     const url = super.getUrl(opts, "deleteOne", idOrOpts);
     const params = super.transformQueryParam(opts, "deleteOne");
     return this.#httpService.delete<R>(url.toString(), { ...opts, params });
+  }
+
+  /**
+   * Creates a new custom request instance
+   * @param method {HttpMethod} `HttpMethod`
+   * @param url {string} Relative path of the entity (in accordance with basePath) as per the REST spec.
+   * @param opts {HttpRequestOptions} Custom `HttpRequestOptions`
+   */
+  request<R = any>(
+    method: HttpMethod,
+    path: HttpRequestOptions["path"],
+    opts: HttpRequestBaseOptions &
+      Pick<HttpRequestOptions, "transform" | "pathParams"> = {},
+  ): Observable<R> {
+    if (opts.body) {
+      opts.body = super.transformFromEntity(
+        { ...opts, transform: opts.transform ?? "none" },
+        opts.body,
+        "request",
+      );
+    }
+    const url = super.getUrl({ ...opts, path }, "request");
+    return this.#httpService
+      .request<R>(method, url.href, cloneDeep(opts))
+      .pipe(map((resp) => super.transformToEntity(opts, resp, "request")));
   }
 }

@@ -1,6 +1,11 @@
 import { Observable } from "rxjs";
 
-import { AnyObject, HttpRequestOptions } from "./utils.types";
+import {
+  AnyObject,
+  HttpMethod,
+  HttpRequestBaseOptions,
+  HttpRequestOptions,
+} from "./utils.types";
 
 export interface IRepository<T, QueryParamType = AnyObject> {
   findAll<R = T>(
@@ -43,4 +48,11 @@ export interface IRepository<T, QueryParamType = AnyObject> {
     opts?: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
   deleteOne<R = any>(opts: HttpRequestOptions<QueryParamType>): Observable<R>;
+
+  request<R = any>(
+    method: HttpMethod,
+    path: HttpRequestOptions["path"],
+    opts?: HttpRequestBaseOptions &
+      Pick<HttpRequestOptions, "transform" | "pathParams">,
+  ): Observable<R>;
 }

@@ -6,7 +6,8 @@ import { NgCrudxOptions } from "./repo-options.types";
 export type AnyObject = Record<string, any>;
 export type uuid = string;
 
-interface HttpRequestBaseOptions {
+export interface HttpRequestBaseOptions {
+  body?: any;
   headers?:
     | HttpHeaders
     | {
@@ -30,7 +31,7 @@ interface HttpRequestBaseOptions {
 
 export type HttpRequestOptions<QueryParamType = AnyObject> = Omit<
   HttpRequestBaseOptions,
-  "params"
+  "body" | "params"
 > & {
   /**
    * Query params
@@ -40,7 +41,13 @@ export type HttpRequestOptions<QueryParamType = AnyObject> = Omit<
    * Path params
    */
   pathParams?: Record<string, string>;
-};
+  /**
+   * @summary Class Model or it's instance that will help in modifying the
+   * payload **in (getting response) and out (sending request).**
+   * Providing `"none"` as value will skip the transformation at all levels.
+   */
+  transform?: "none" | RepoEntityOptions["transform"];
+} & Partial<Pick<RepoEntityOptions, "path">>;
 
 export type AdaptQueryParamsInput = {
   rootOpts: NgCrudxOptions;
@@ -81,3 +88,17 @@ export type RepoQueryBuilder<
    */
   builder<P = B>(params: P): HttpParams | undefined;
 };
+
+/**
+ * @link https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
+ */
+export type HttpMethod =
+  | "get"
+  | "post"
+  | "patch"
+  | "put"
+  | "delete"
+  | "options"
+  | "head"
+  | "connect"
+  | "trace";
