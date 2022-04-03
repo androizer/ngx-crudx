@@ -4,6 +4,7 @@
 
 [![npm version](https://badge.fury.io/js/ngx-crudx.svg)](https://badge.fury.io/js/ngx-crudx)
 [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 > **NOTE: This DOC is under WIP**
 
@@ -35,9 +36,11 @@
   - [replaceOne](#replaceone)
   - [deleteOne](#deleteone)
 - [Custom Repository](#custom-repository)
+  - [Extra Routes](#extra-routes)
 - [HttpsRequestOptions API's](#httpsrequestoptions-apis)
   - [params?](#params)
   - [pathParams?](#pathparams)
+  - [transform?](#transform-1)
 - [Known Issues](#known-issues)
 - [Contributions](#contributions)
   - [Commit Message Format](#commit-message-format)
@@ -410,12 +413,38 @@ import { UserRoutingModule } from "./user-routing.module";
 export class UserModule {}
 ```
 
+### Extra Routes
+
+The need of custom repositories depends upon extra operations other than basic CRUD. Hence, to incorporate such endpoints which cannot be generic-fied and need different endpoints and other features of `crudx` to work in conjunction, there is a `request` method which exposes basic params to create a new request using various options (`HttpRequestOptions`).
+
+```typescript
+import { RepositoryMixin } from "ngx-crudx";
+
+import { User } from "../user.model";
+import { CountTransform } from "../user-count.transform.ts";
+
+export class UserRepository extends RepositoryMixin(User) {
+  constructor() {
+    super();
+  }
+
+  totalCount() {
+    return super.request("get", "users/count", { transform: CountTransform });
+  }
+}
+```
+
+Signature for request method is as follow:
+
+> request<R = any>( method: HttpMethod, path: HttpRequestOptions["path"], opts?: HttpRequestBaseOptions & Pick<HttpRequestOptions, "transform" | "pathParams"> ): Observable<R>;
+
 ## HttpsRequestOptions API's
 
 Many of the properties provided by the `HttpClient's` **_RequestOptions_** share the same signature. The ones, which share the same signature are listed below:
 
 ```typescript
 interface HttpRequestBaseOptions {
+  body?: any;
   headers?:
     | HttpHeaders
     | {
@@ -436,6 +465,17 @@ interface HttpRequestBaseOptions {
   responseType?: "json";
   withCredentials?: boolean;
 }
+
+export type HttpMethod =
+  | "get"
+  | "post"
+  | "patch"
+  | "put"
+  | "delete"
+  | "options"
+  | "head"
+  | "connect"
+  | "trace";
 ```
 
 Here are the ones which are supported by library:
@@ -453,6 +493,12 @@ export type HttpRequestOptions<QueryParamType = AnyObject> = Omit<
    * Path params
    */
   pathParams?: Record<string, string>;
+  /**
+   * @summary Class Model or it's instance that will help in modifying the
+   * payload **in (getting response) and out (sending request).**
+   * Providing `"none"` as value will skip the transformation at all levels.
+   */
+  transform?: "none" | RepoEntityOptions["transform"];
 };
 ```
 
@@ -500,6 +546,33 @@ export class PhotoComponent implements OnInit {
         pathParams: {
           userId: "123",
         },
+      })
+      .subscribe((resp) => {
+        // do something with resp
+      });
+  }
+}
+```
+
+### transform?
+
+The ability to transform the request/response payload can be done at runtime. There may be such cases where **_transformations are no longer needed for a particular endpoint_** but it's transformation adapter is configured at decorator (`@Entity`) level. Hence, this property will help us to control the default behavior.
+
+```typescript
+@Component({
+  selector: "app-photo",
+  templateUrl: "./photo.component.html",
+  styleUrls: ["./photo.component.scss"],
+})
+export class PhotoComponent implements OnInit {
+  constructor(
+    @Inject(RepoToken(Photo)) private readonly photoRepo: Repository<Photo>,
+  ) {}
+
+  ngOnInit() {
+    this.photoRepo
+      .findAll({
+        transform: "none", // <-- this will simply disable the transformation logic
       })
       .subscribe((resp) => {
         // do something with resp
