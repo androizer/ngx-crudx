@@ -1,5 +1,4 @@
 import { CommonModule } from "@angular/common";
-import { HttpClientModule } from "@angular/common/http";
 import {
   APP_INITIALIZER,
   Injector,
@@ -16,7 +15,7 @@ import { getRepoProviders } from "./utils";
 // https://github.com/angular/angular/issues/19698#issuecomment-349359036
 // @dynamic
 @NgModule({
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule],
 })
 export class NgCrudxModule {
   constructor(injector: Injector) {
