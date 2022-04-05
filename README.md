@@ -16,7 +16,9 @@
 
 - [Features](#features)
 - [Installation](#installation)
-  - [Import the NgCrudxModule](#import-the-ngcrudxmodule)
+- [Import the NgCrudxModule](#import-the-ngcrudxmodule)
+  - [Sync Options](#sync-options)
+  - [Async Options](#async-options)
 - [Step-by-Step Guide](#step-by-step-guide)
   - [Create a Model](#create-a-model)
   - [Create an Entity](#create-an-entity)
@@ -71,11 +73,14 @@ or yarn:
 yarn add ngx-crudx
 ```
 
-### Import the NgCrudxModule
+## Import the NgCrudxModule
+
+### Sync Options
 
 For monolith architecture, a single API server url is needed.
 
 ```typescript
+import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
 import { NgCrudxModule } from "ngx-crudx";
@@ -83,6 +88,7 @@ import { NgCrudxModule } from "ngx-crudx";
 @NgModule({
   imports: [
     BrowserModule,
+    HttpClientModule,
     NgCrudxModule.forRoot({
       basePath: "http://localhost:3000",
       name: "DEFAULT", // Optional and defaults to DEFAULT
@@ -96,6 +102,7 @@ export class AppModule {}
 For micro-services architecture, multiple API server url can be configured.
 
 ```typescript
+import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
 import { NgCrudxModule } from "ngx-crudx";
@@ -103,6 +110,7 @@ import { NgCrudxModule } from "ngx-crudx";
 @NgModule({
   imports: [
     BrowserModule,
+    HttpClientModule,
     NgCrudxModule.forRoot([
       {
         basePath: "http://localhost:3001/auth-service",
@@ -113,6 +121,40 @@ import { NgCrudxModule } from "ngx-crudx";
         name: "USER_SERVICE", // Required
       },
     ]),
+  ],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+```
+
+### Async Options
+
+For async root options, factory strategy can be used to provide configuration at runtime. The factory method **must always return `Promise<NgCrudxOptions>`**;
+
+```typescript
+import { HttpClientModule } from '@angular/common/http';
+import { BrowserModule } from "@angular/platform-browser";
+import { NgModule } from "@angular/core";
+import { NgCrudxModule } from "ngx-crudx";
+
+import { EnvService } from "./services";
+
+@NgModule({
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    NgCrudxModule.forRoot({
+      useFactory: async (envService: EnvService) => {
+        const envConfigs = await envService.getConfigs();
+        // or if observable
+        // const envConfigs = await envService.getConfigs().toPromise();
+        return Promise.resolve({
+          basePath: `${envConfigs.apiUrl}`,
+          name: "DEFAULT",
+        });
+      },
+      deps: [EnvService],
+    }),
   ],
   bootstrap: [AppComponent],
 })
