@@ -13,6 +13,8 @@ import { REPO_ENTITY_DEFAULT_OPTIONS } from "./tokens";
 import { NgCrudxAsyncOptions, NgCrudxOptions } from "./types";
 import { getRepoProviders } from "./utils";
 
+// https://github.com/angular/angular/issues/19698#issuecomment-349359036
+// @dynamic
 @NgModule({
   imports: [CommonModule, HttpClientModule],
 })
