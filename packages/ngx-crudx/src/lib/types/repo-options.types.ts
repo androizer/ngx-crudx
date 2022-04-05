@@ -1,7 +1,3 @@
-export type NgCrudxOptions =
-  | NgCrudxBaseOptions
-  | Required<NgCrudxBaseOptions>[];
-
 type NgCrudxBaseOptions = {
   /**
    * Absolute path for the REST service where CRUD ops
@@ -16,4 +12,13 @@ type NgCrudxBaseOptions = {
    * @default ```DEFAULT```
    */
   name?: string;
+};
+
+export type NgCrudxOptions =
+  | NgCrudxBaseOptions
+  | Required<NgCrudxBaseOptions>[];
+
+export type NgCrudxAsyncOptions = {
+  useFactory: (...args: any[]) => Promise<NgCrudxOptions>;
+  deps?: any[];
 };
