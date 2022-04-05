@@ -1,11 +1,16 @@
 import { CommonModule } from "@angular/common";
 import { HttpClientModule } from "@angular/common/http";
-import { Injector, ModuleWithProviders, NgModule } from "@angular/core";
+import {
+  APP_INITIALIZER,
+  Injector,
+  ModuleWithProviders,
+  NgModule,
+} from "@angular/core";
 
 import { getMetadataStorage } from "./internals";
 import { RepoModelOrSchema } from "./models";
 import { REPO_ENTITY_DEFAULT_OPTIONS } from "./tokens";
-import { NgCrudxOptions } from "./types";
+import { NgCrudxAsyncOptions, NgCrudxOptions } from "./types";
 import { getRepoProviders } from "./utils";
 
 @NgModule({
@@ -23,6 +28,35 @@ export class NgCrudxModule {
         {
           provide: REPO_ENTITY_DEFAULT_OPTIONS,
           useValue: opts,
+        },
+      ],
+    };
+  }
+
+  static forRootAsync(
+    opts: NgCrudxAsyncOptions,
+  ): ModuleWithProviders<NgCrudxModule> {
+    return {
+      ngModule: NgCrudxModule,
+      providers: [
+        {
+          provide: APP_INITIALIZER,
+          useFactory: (...args) => {
+            return async () => {
+              const crudxOpts = await opts.useFactory(...args);
+              getMetadataStorage.setAsyncCrudOptions(crudxOpts);
+            };
+          },
+          deps: opts.deps,
+          multi: true,
+        },
+        {
+          provide: REPO_ENTITY_DEFAULT_OPTIONS,
+          useFactory: () => {
+            const crudxOpts = getMetadataStorage.getAsyncCrudOptions();
+            getMetadataStorage.setAsyncCrudOptions(undefined);
+            return crudxOpts;
+          },
         },
       ],
     };

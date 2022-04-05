@@ -1,9 +1,11 @@
 import { Injector } from "@angular/core";
+
 import { RepoModel } from "../models";
-import { Constructable, RepoEntityOptions, uuid } from "../types";
+import { Constructable, NgCrudxOptions, uuid } from "../types";
 
 class MetadataStorageService {
   // private variables
+  #rootOpts: NgCrudxOptions;
   #injector: Injector;
   #repoModelMap = new Map<uuid, Constructable<RepoModel>>();
 
@@ -34,6 +36,14 @@ class MetadataStorageService {
    */
   getRepoModels(): Constructable<RepoModel>[] {
     return Array.from(this.#repoModelMap, ([_, _repoModel]) => _repoModel);
+  }
+
+  setAsyncCrudOptions(opts: NgCrudxOptions): void {
+    this.#rootOpts = opts;
+  }
+
+  getAsyncCrudOptions(): NgCrudxOptions {
+    return this.#rootOpts;
   }
 }
 
