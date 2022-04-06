@@ -46,6 +46,22 @@ export type RepoEntityDecoratorOptions = Omit<RepoEntityOptions, "id">;
 type RoutesOptions = {
   findAll: Omit<RouteOptions, "transform"> & {
     transform?: Pick<Transform<any[]>, "transformToEntity">;
+    /**
+     * The key at which the data `(findAll array response)` is
+     * persisted and it extracted when transforming.
+     * @example
+     * ```ts
+     * // response from API
+     * {
+     *   total: 22,
+     *   data: [...],
+     * }
+     *
+     * // add prop "data"
+     * {dataKey: "data"}
+     * ```
+     */
+    dataKey?: string;
   };
   findOne: Omit<RouteOptions, "transform"> & {
     transform?: Pick<Transform, "transformToEntity">;

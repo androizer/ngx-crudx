@@ -1,6 +1,6 @@
 import { HttpParams } from "@angular/common/http";
 import { Directive, Injector } from "@angular/core";
-import { isArray, isEmpty, isFunction, isObject } from "lodash-es";
+import { isArray, isEmpty, isFunction, isNil, isObject } from "lodash-es";
 import { Observable } from "rxjs";
 
 import { ConnectionNameNotFound } from "../exceptions";
@@ -172,6 +172,28 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     resPayload: any,
     key: keyof RepoEntityOptions["routes"] | "request",
   ) {
+    if (key === "findAll") {
+      if (isObject(resPayload)) {
+        const { dataKey } = this.#repoOpts.routes?.[key] ?? {};
+        if (dataKey) {
+          resPayload = resPayload[dataKey] ?? [];
+        }
+      }
+      if (isArray(resPayload)) {
+        return resPayload.reduce((acc, item) => {
+          const data = this._fetchAdapterAndTransform(
+            "to",
+            httpOpts,
+            item,
+            key,
+          );
+          if (!isNil(data)) {
+            acc.push(data);
+          }
+          return acc;
+        }, []);
+      }
+    }
     return this._fetchAdapterAndTransform("to", httpOpts, resPayload, key);
   }
 
