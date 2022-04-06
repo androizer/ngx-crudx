@@ -2,6 +2,7 @@ import { getMetadataStorage } from "../internals";
 import { RepoModel } from "../models";
 import { Repository } from "../services";
 import { AnyObject, Constructable } from "../types";
+import { isEntityValid } from "../utils";
 
 type Constructor<T = {}> = new (...args: any[]) => T;
 
@@ -12,7 +13,9 @@ type Constructor<T = {}> = new (...args: any[]) => T;
 function RepositoryMixin<TBase extends Constructor, QueryParamType = AnyObject>(
   _entity: TBase,
 ) {
-  getMetadataStorage.setRepoModel(_entity as Constructable<RepoModel>);
+  if (isEntityValid(_entity)) {
+    getMetadataStorage.setRepoModel(_entity as Constructable<RepoModel>);
+  }
   const Model = class extends Repository {
     constructor() {
       super(_entity);

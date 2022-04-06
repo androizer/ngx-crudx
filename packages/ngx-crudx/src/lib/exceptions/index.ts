@@ -15,7 +15,7 @@ export class CircularDependencyException extends Error {
 export class RepoEntityDecoratorMissingException extends Error {
   constructor(ctx: Function) {
     super(
-      `The entity passed named ${ctx.name} is missing the @RepoEntity() decorator. Make sure you have decorated the entity class with it.`,
+      `The entity passed named ${ctx.name} is missing the @RepoEntity/@Entity decorator. Make sure you have decorated the entity class with it.`,
     );
   }
 }
