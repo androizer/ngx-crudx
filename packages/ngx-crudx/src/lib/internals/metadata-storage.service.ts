@@ -18,7 +18,7 @@ class MetadataStorageService {
   }
 
   setRepoModel(_repoModel: Constructable<RepoModel>) {
-    const _opts = new _repoModel()._repoOpts;
+    const _opts = new _repoModel().getRepositoryOptionsForEntity();
     this.#repoModelMap.set((_opts as any).id, _repoModel);
   }
 

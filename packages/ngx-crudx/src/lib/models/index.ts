@@ -2,10 +2,11 @@ import { RepoEntityOptions } from "../types";
 
 /**
  * Repo Model
- * @description Don't use this model directly. This class is meant for internal use.
+ * @description Don't use this interface directly.
+ * This interface is meant for internal use only.
  */
-export class RepoModel {
-  constructor(public _repoOpts?: RepoEntityOptions) {}
+export interface RepoModel {
+  getRepositoryOptionsForEntity?(): RepoEntityOptions;
 }
 
 export type RepoModelOrSchema = Function;

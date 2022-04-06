@@ -1,11 +1,7 @@
-import { isFunction } from "lodash-es";
-
-import {
-  CircularDependencyException,
-  RepoEntityDecoratorMissingException,
-} from "../exceptions";
+import { CircularDependencyException } from "../exceptions";
 import { RepoModel, RepoModelOrSchema } from "../models";
 import { Constructable } from "../types";
+import { isEntityValid } from "./validate-entity.util";
 
 /**
  * Utility function which will help to inject the repository
@@ -17,15 +13,13 @@ function getRepoEntityToken(entity: RepoModelOrSchema): string {
   if (!entity) {
     throw new CircularDependencyException("@RepoEntity()");
   }
-  if (
-    isFunction(entity) &&
-    Object.getPrototypeOf(entity).name !== RepoModel.name
-  ) {
-    throw new RepoEntityDecoratorMissingException(entity);
+  if (isEntityValid(entity)) {
+    const _repoOpts =
+      new (entity as Constructable<RepoModel>)().getRepositoryOptionsForEntity();
+    const token = `${(_repoOpts as any).id}${entity.name}Repository`;
+    return token;
   }
-  const _repoOpts = new (entity as Constructable<RepoModel>)()._repoOpts;
-  const token = `${(_repoOpts as any).id}${entity.name}Repository`;
-  return token;
+  return null;
 }
 
 export { getRepoEntityToken as RepoToken };

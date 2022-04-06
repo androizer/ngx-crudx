@@ -12,12 +12,9 @@ function RepoEntity(opts: RepoEntityDecoratorOptions): ClassDecorator {
     // This `ID` should be unique out of all
     // the entities used for `RepoModel` options
     _opts.id = uuid_v4();
-    class RepoModel {
-      constructor(public _repoOpts: RepoEntityOptions) {}
-    }
-    RepoModel.prototype._repoOpts = _opts;
-    Object.setPrototypeOf(fn.prototype, RepoModel.prototype);
-    Object.setPrototypeOf(fn, RepoModel);
+    fn.prototype.getRepositoryOptionsForEntity = function () {
+      return _opts;
+    };
   };
 }
 

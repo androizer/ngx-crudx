@@ -3,13 +3,11 @@ import { Directive, Injector } from "@angular/core";
 import { isArray, isEmpty, isFunction, isObject } from "lodash-es";
 import { Observable } from "rxjs";
 
-import {
-  ConnectionNameNotFound,
-  RepoEntityDecoratorMissingException,
-} from "../exceptions";
+import { ConnectionNameNotFound } from "../exceptions";
 import { getMetadataStorage } from "../internals";
 import { RepoModel } from "../models";
 import { REPO_ENTITY_DEFAULT_OPTIONS } from "../tokens";
+import { isEntityValid } from "../utils";
 
 import type {
   Transform,
@@ -22,7 +20,6 @@ import type {
   RepoQueryBuilder,
   HttpRequestBaseOptions,
 } from "../types";
-
 const DEFAULT_CONNECTION_NAME = "DEFAULT";
 
 @Directive()
@@ -35,11 +32,11 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     _entity: Function,
     private readonly _injector: Injector = getMetadataStorage.getInjector(),
   ) {
-    if (Object.getPrototypeOf(_entity).name !== RepoModel.name) {
-      throw new RepoEntityDecoratorMissingException(_entity);
+    if (isEntityValid(_entity)) {
+      this.#rootOpts = this._injector.get(REPO_ENTITY_DEFAULT_OPTIONS);
+      this.#repoOpts =
+        new (_entity as Constructable<RepoModel>)().getRepositoryOptionsForEntity();
     }
-    this.#rootOpts = this._injector.get(REPO_ENTITY_DEFAULT_OPTIONS);
-    this.#repoOpts = new (_entity as Constructable<RepoModel>)()._repoOpts;
   }
 
   abstract findAll<R = T>(
