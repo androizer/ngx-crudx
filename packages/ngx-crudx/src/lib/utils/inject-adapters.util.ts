@@ -15,19 +15,24 @@ function _injectAdapter(
       funcs: Constructable<Function>[],
       adapter: Function,
     ): boolean => funcs.some((func) => func.name === adapter.name);
+
     const paths = (obj = {}): Constructable<Function>[] => {
-      return Object.entries(obj).reduce((product, [key, value]) => {
+      return Object.entries(obj).reduce((acc, [key, value]) => {
         if (key === "transform" && isFunction(value)) {
-          const found = isAdapterExist(product, value);
-          if (!found) {
-            return product.concat(value);
+          const allowTransformDI = obj["allowTransformDI"] ?? true;
+          if (allowTransformDI) {
+            const found = isAdapterExist(acc, value);
+            if (!found) {
+              return acc.concat(value);
+            }
           }
         } else if (!isEmpty(value) && isObject(value)) {
-          return product.concat(paths(value));
+          return acc.concat(paths(value));
         }
-        return product;
+        return acc;
       }, []);
     };
+
     const repoOpts = new entity().getRepositoryOptionsForEntity();
     const adaptersArr = paths(repoOpts);
     adaptersArr.forEach((adapter) =>

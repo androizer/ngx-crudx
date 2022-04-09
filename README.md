@@ -28,6 +28,7 @@
   - [path](#path)
   - [name?](#name)
   - [transform?](#transform)
+  - [allowTransformDI?](#allowtransformdi)
   - [qs?](#qs)
   - [routes?](#routes)
 - [Repository API](#repository-api)
@@ -80,7 +81,7 @@ yarn add ngx-crudx
 For monolith architecture, a single API server url is needed.
 
 ```typescript
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from "@angular/common/http";
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
 import { NgCrudxModule } from "ngx-crudx";
@@ -102,7 +103,7 @@ export class AppModule {}
 For micro-services architecture, multiple API server url can be configured.
 
 ```typescript
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from "@angular/common/http";
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
 import { NgCrudxModule } from "ngx-crudx";
@@ -132,7 +133,7 @@ export class AppModule {}
 For async root options, factory strategy can be used to provide configuration at runtime. The factory method **must always return `Promise<NgCrudxOptions>`**;
 
 ```typescript
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule } from "@angular/common/http";
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
 import { NgCrudxModule } from "ngx-crudx";
@@ -273,6 +274,8 @@ The path passed to the **forRoot** method on `ngx-crudx` will be base-path and t
 
 ### name?
 
+> type - string
+
 The name of the connection name to which the current path is being appended to. Defaults to **DEFAULT**.
 
 ### transform?
@@ -299,6 +302,31 @@ export type Transform<T = unknown | any, R = T> = {
 };
 ```
 
+### allowTransformDI?
+
+> **type** - boolean\
+> **default** - true
+
+The value for the `transform` can be either object based (instance) or class based. If the value is service, then the DI registration for the value of the **transform** will happen from inside the _crudx_. Refer more [here](https://github.com/androizer/ngx-crudx#known-issues).
+
+Since this service is registered in DI context and will be provided as singleton but this mechanism is not always required because the **adapter/transform implementation is generally stateless**. A new instance (POJO) on every request/response roundtrip will suffice.
+
+```typescript
+{
+  ...
+  transform: UserAdapter, // this will not register the service into DI context
+  allowTransformDI: false,
+  ...
+}
+```
+
+The benefit of this strategy is the **memory allocation**, which will be **freed** upon completion of request/response roundtrip instead of simply residing in memory until the module is manually destroyed.
+
+See more:
+
+- [Angular Module instance never get destroyed](https://github.com/angular/angular/issues/37095)
+- [NgModuleRef](https://angular.io/api/core/NgModuleRef)
+
 ### qs?
 
 Callback function which mutate/returns a new HttpParams object. The value of the param is the value passed as **params** to `HttpRequestOptions`.
@@ -309,18 +337,20 @@ Callback function which mutate/returns a new HttpParams object. The value of the
 
 Object which consist of set of individual routes based configuration. For every Repository method, there is RouteOption type which is defined below.
 
-```typescript
+````typescript
 type RouteOptions = {
   /**
    * The path for the individual route
    */
   path?: string;
+  
   /**
    * Route specific model adapter/transformer.
    * @description Always **_override_** the
    * default adapter defined in repo options.
    */
   transform?: ITransform;
+  
   /**
    * Callback/QueryBuilder for mutating the query params passed via
    * Repository method
@@ -332,8 +362,15 @@ type RouteOptions = {
     | RepoQueryBuilder
     | RepoQueryBuilder<"override">
     | ((params: HttpParams | AnyObject) => HttpParams);
+  
+  /**
+   * Predicate value to **allow/restrict** `transform` value
+   * registration with `Injector`.
+   * @default true
+   */
+  allowTransformDI?: boolean;
 };
-```
+````
 
 - **path?**\
   This will override the path formed by `Repository` helper mechanism. This is useful in case your path doesn't match the criteria mentioned in the [Repository API](#repository-api) section.
@@ -635,7 +672,7 @@ Class based Adapter/Transformer services is experimental at the moment. Lexical 
   path: "user",
   routes: {
     createOne: {
-      transform: UserAdapter
+      transform: UserAdapter // This class will be registered into DI context from within crudx
     }
   }
 })
@@ -661,7 +698,7 @@ export class UserAdapter implements Transform<User> {
 @NgModule({
   imports: [CommonModuleNgCrudxModule.forFeature([User])],
   declarations: [UserComponent],
-  providers: [UserAdapter], // ❌ don't register adapter service.
+  providers: [UserAdapter], // ❌ don't register adapter/transform service.
 })
 export class UserModule {}
 ```

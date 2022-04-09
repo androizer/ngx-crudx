@@ -261,11 +261,22 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   ) {
     let data = payload;
     if (isFunction(adapter)) {
-      const instance = this._injector.get(adapter);
-      data =
-        mode === "to"
-          ? instance.transformToEntity(payload)
-          : instance.transformFromEntity(payload);
+      let instance;
+      try {
+        instance = this._injector.get(adapter);
+      } catch (error) {
+        if (error.name === "NullInjectorError") {
+          instance = new (adapter as FunctionConstructor)();
+        }
+      }
+      if (instance) {
+        data =
+          mode === "to"
+            ? instance.transformToEntity(payload)
+            : instance.transformFromEntity(payload);
+        // free up memory
+        instance = undefined;
+      }
     } else if (isObject(adapter) && !isEmpty(adapter)) {
       data =
         mode === "to"
