@@ -14,11 +14,11 @@ import type {
   AnyObject,
   Constructable,
   HttpRequestOptions,
-  IRepository,
   RepoEntityOptions,
   NgCrudxOptions,
   RepoQueryBuilder,
   HttpRequestBaseOptions,
+  IRepository,
 } from "../types";
 const DEFAULT_CONNECTION_NAME = "DEFAULT";
 
@@ -78,7 +78,7 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   abstract deleteOne<R = any>(
     opts: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
-  abstract request<R = any>(
+  protected abstract request<R = any>(
     method: string,
     path: string,
     opts?: HttpRequestBaseOptions &

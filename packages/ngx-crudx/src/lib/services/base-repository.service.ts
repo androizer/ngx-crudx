@@ -83,11 +83,11 @@ export class Repository<
    * fetch(url, body, {method: 'PATCH', ...opts})
    * ```
    */
-  updateOne<R = T>(
-    idOrBody: string | number | Partial<R>,
-    bodyOrOpts: Partial<R> | HttpRequestOptions = {},
+  updateOne<R = Partial<T>>(
+    idOrBody: string | number | R,
+    bodyOrOpts: R | HttpRequestOptions = {},
     opts: HttpRequestOptions = {},
-  ): Observable<Partial<R>> {
+  ): Observable<R> {
     let body;
     if (typeof idOrBody === "object") {
       body = idOrBody;
@@ -113,7 +113,7 @@ export class Repository<
     idOrBody: string | number | R,
     bodyOrOpts: R | HttpRequestOptions = {},
     opts: HttpRequestOptions = {},
-  ): Observable<Partial<R>> {
+  ): Observable<R> {
     let body;
     if (typeof idOrBody === "object") {
       body = idOrBody;
@@ -150,7 +150,7 @@ export class Repository<
    * @param url {string} Relative path of the entity (in accordance with basePath) as per the REST spec.
    * @param opts {HttpRequestOptions} Custom `HttpRequestOptions`
    */
-  request<R = any>(
+  protected request<R = any>(
     method: HttpMethod,
     path: HttpRequestOptions["path"],
     opts: HttpRequestBaseOptions &
