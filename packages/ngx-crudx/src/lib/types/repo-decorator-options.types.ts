@@ -1,10 +1,10 @@
 import { HttpParams } from "@angular/common/http";
 
 import {
-  Transform,
   AnyObject,
   Constructable,
   RepoQueryBuilder,
+  Transform,
 } from "./utils.types";
 
 export type RepoEntityOptions = {
@@ -39,13 +39,29 @@ export type RepoEntityOptions = {
    * @returns `HttpParams`
    */
   qs?: (params: AnyObject) => HttpParams | undefined;
-};
+} & AllowTransformDI;
 
 export type RepoEntityDecoratorOptions = Omit<RepoEntityOptions, "id">;
 
 type RoutesOptions = {
   findAll: Omit<RouteOptions, "transform"> & {
     transform?: Pick<Transform<any[]>, "transformToEntity">;
+    /**
+     * The key at which the data `(findAll array response)` is
+     * persisted and it extracted when transforming.
+     * @example
+     * ```ts
+     * // response from API
+     * {
+     *   total: 22,
+     *   data: [...],
+     * }
+     *
+     * // add prop "data"
+     * {dataKey: "data"}
+     * ```
+     */
+    dataKey?: string;
   };
   findOne: Omit<RouteOptions, "transform"> & {
     transform?: Pick<Transform, "transformToEntity">;
@@ -79,13 +95,13 @@ type RouteOptions = {
     | RepoQueryBuilder
     | RepoQueryBuilder<"override">
     | ((params: HttpParams | AnyObject) => HttpParams);
-};
+} & AllowTransformDI;
 
 /**
  * @experimental Class based Adapter is `experimental`
  * at the moment. `Lexical scoping` issue persist when
  * referencing the model _(which is annotated with
- * the `@RepoEntity`)_ in the adapter class itself.
+ * the `@RepoEntity/@Entity`)_ in the adapter class itself.
  */
 type ITransform =
   | Constructable<Transform>
@@ -96,3 +112,25 @@ type ITransform =
       | (Pick<Transform, "transformToEntity"> &
           Partial<Pick<Transform, "transformFromEntity">>)
     );
+
+type AllowTransformDI = {
+  /**
+   * Predicate value to **allow/restrict** `transform` value
+   * registration with `Injector`.
+   * @description If the value of the `transform` is class based
+   * then it will be registered into the DI context from within the _crudx_.\
+   * If the class is simply POJO which doesn't needs to be registered
+   * with DI context, then `allowTransformDI` prop comes in handy.
+   * @example
+   * ```typescript
+   * // This will not register the class provided
+   * // as transform value to DI context.
+   * allowTransformDI: false,
+   * transform: UserTransform
+   * ```
+   * @link https://github.com/androizer/ngx-crudx#known-issues
+   *
+   * @default true
+   */
+  allowTransformDI?: boolean;
+};

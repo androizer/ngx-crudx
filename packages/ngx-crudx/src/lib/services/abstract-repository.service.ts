@@ -1,6 +1,6 @@
 import { HttpParams } from "@angular/common/http";
 import { Directive, Injector } from "@angular/core";
-import { isArray, isEmpty, isFunction, isObject } from "lodash-es";
+import { isArray, isEmpty, isFunction, isNil, isObject } from "lodash-es";
 import { Observable } from "rxjs";
 
 import { ConnectionNameNotFound } from "../exceptions";
@@ -14,11 +14,11 @@ import type {
   AnyObject,
   Constructable,
   HttpRequestOptions,
-  IRepository,
   RepoEntityOptions,
   NgCrudxOptions,
   RepoQueryBuilder,
   HttpRequestBaseOptions,
+  IRepository,
 } from "../types";
 const DEFAULT_CONNECTION_NAME = "DEFAULT";
 
@@ -78,7 +78,7 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   abstract deleteOne<R = any>(
     opts: HttpRequestOptions<QueryParamType>,
   ): Observable<R>;
-  abstract request<R = any>(
+  protected abstract request<R = any>(
     method: string,
     path: string,
     opts?: HttpRequestBaseOptions &
@@ -172,6 +172,28 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     resPayload: any,
     key: keyof RepoEntityOptions["routes"] | "request",
   ) {
+    if (["findAll", "request"].includes(key)) {
+      if (isObject(resPayload)) {
+        const { dataKey } = this.#repoOpts.routes?.[key] ?? {};
+        if (dataKey) {
+          resPayload = resPayload[dataKey] ?? [];
+        }
+      }
+      if (isArray(resPayload)) {
+        return resPayload.reduce((acc, item) => {
+          const data = this._fetchAdapterAndTransform(
+            "to",
+            httpOpts,
+            item,
+            key,
+          );
+          if (!isNil(data)) {
+            acc.push(data);
+          }
+          return acc;
+        }, []);
+      }
+    }
     return this._fetchAdapterAndTransform("to", httpOpts, resPayload, key);
   }
 
@@ -239,11 +261,22 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
   ) {
     let data = payload;
     if (isFunction(adapter)) {
-      const instance = this._injector.get(adapter);
-      data =
-        mode === "to"
-          ? instance.transformToEntity(payload)
-          : instance.transformFromEntity(payload);
+      let instance;
+      try {
+        instance = this._injector.get(adapter);
+      } catch (error) {
+        if (error.name === "NullInjectorError") {
+          instance = new (adapter as FunctionConstructor)();
+        }
+      }
+      if (instance) {
+        data =
+          mode === "to"
+            ? instance.transformToEntity(payload)
+            : instance.transformFromEntity(payload);
+        // free up memory
+        instance = undefined;
+      }
     } else if (isObject(adapter) && !isEmpty(adapter)) {
       data =
         mode === "to"

@@ -36,7 +36,7 @@ export type HttpRequestOptions<QueryParamType = AnyObject> = Omit<
   /**
    * Query params
    */
-  params?: QueryParamType;
+  params?: QueryParamType | HttpParams;
   /**
    * Path params
    */
@@ -76,7 +76,7 @@ export type Constructable<T> = {
 
 export type RepoQueryBuilder<
   M = "extend",
-  B = M extends "extend" ? HttpParams : AnyObject,
+  B = M extends "extend" ? HttpParams : AnyObject | HttpParams,
 > = {
   /**
    * Mode of operation
