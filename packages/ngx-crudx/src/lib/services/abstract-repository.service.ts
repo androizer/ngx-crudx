@@ -172,7 +172,7 @@ export abstract class AbstractRepository<T, QueryParamType = AnyObject>
     resPayload: any,
     key: keyof RepoEntityOptions["routes"] | "request",
   ) {
-    if (key === "findAll") {
+    if (["findAll", "request"].includes(key)) {
       if (isObject(resPayload)) {
         const { dataKey } = this.#repoOpts.routes?.[key] ?? {};
         if (dataKey) {
