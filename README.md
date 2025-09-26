@@ -145,7 +145,7 @@ import { EnvService } from "./services";
   imports: [
     BrowserModule,
     HttpClientModule,
-    NgCrudxModule.forRoot({
+    NgCrudxModule.forRootAsync({
       useFactory: async (envService: EnvService) => {
         const envConfigs = await envService.getConfigs();
         // or if observable
